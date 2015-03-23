@@ -17,7 +17,7 @@ import pyAgrum as gum
 import gumLib.notebook as gnb
 
 from collections import Counter
-import itertools
+from itertools import chain, islice
 
 #Génère des noms de potentiel
 def nomPotentiel(jt,c):
@@ -79,6 +79,23 @@ def cliqueRacine(jt):
 """def absorption(jt):
     for i in jt.ids():
         if()"""
+        
+#Initialisation des potentiels de séparateurs
+def couples_cliques(iterable, taille, format=iter):
+    """Découpe les arcs en liste de couples"""
+    it = iter(iterable)
+    while True:
+        yield format(chain((it.next(),), islice(it, taille - 1)))
+
+def nom_separateur(jt, ca, cb):
+    """Retourne le nom du séparateur entre deux cliques a et b d'un arbre de jonction jt"""    
+    res="Psi"
+    for n in list(jt.clique(ca)):
+        res += str(n)+"_"
+    res+= "--"
+    for n in list(jt.clique(cb)):
+        res += str(n)+"_"
+    return res
                     
 #Reçoit un réseau bayésien et des évidences et calcule la probabilité des targets
 def metaCode(bn,evs,t):
@@ -110,6 +127,20 @@ def metaCode(bn,evs,t):
     print("#########################################")
     initPotentials(bn,jt)
     evsPotentials(bn,jt,ids) 
+    
+    print("######################################################")
+    print("##### Création et Initialisation des Séparateurs #####")
+    print("######################################################")
+    #Création du potentiel séparateur
+    for n in couples_cliques(jt.edges(), 1, list) :
+        print("Création du potentiel "+nom_separateur(jt, n[0][0], n[0][1]))
+    #Ajout des variables (ie : les variables dans le séparateur)
+    for n in couples_cliques(jt.edges(), 1, list) :
+        for c in n:
+            for i in list(jt.clique(c[0]).intersection(jt.clique(c[1]))):
+                print("Ajout de la variable "+str(i)+" au potentiel "+nom_separateur(jt, c[0], c[1]))
+
+   
     print("#########################################")
     print("############# INFERENCE #################")
     print("#########################################")
