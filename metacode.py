@@ -15,13 +15,13 @@ Created on Tue Mar 17 23:24:09 2015
 
 import pyAgrum as gum
 import gumLib.notebook as gnb
-
+import itertools
 from collections import Counter
-from itertools import chain, islice
+
 
 #Génère des noms de potentiel
 def nomPotentiel(jt,c):
-    res="Phi_"
+    res="Phi"
     for n in jt.clique(c):
         res += str(n)+"_"
     return res
@@ -51,13 +51,12 @@ def nomPotentielEvs(bn, evs):
     res=list()
     for i in bn.ids():
         if(evs.has_key(bn.variable(i).name())):
-            res.append(i) 
+            res.append(i)
     return res
 
 #Affectation des évidences à un potentiel
 def evsPotentials(bn, jt, ids):
     for i in ids:
-        print(i)
         for j in jt.ids():
             if (i in jt.clique(j)):
                 b = 1
@@ -68,27 +67,24 @@ def evsPotentials(bn, jt, ids):
                 if(b == 1):
                     for index in enumerate(ids): 
                         print("Multiplication du potentiel Ev"+str(i)+" par la variable (évidence) "+str(i))
-                        break
+                    break
                 
                 
 #Retourne la clique "racine" vers laquelle on fait converger l'information
 def cliqueRacine(jt):
     c = Counter(list(itertools.chain(*jt.edges())))
     return c.most_common(1)[0][0]
-    
-"""def absorption(jt):
-    for i in jt.ids():
-        if()"""
         
 #Initialisation des potentiels de séparateurs
+
+#Découpe les arcs en liste de couples
 def couples_cliques(iterable, taille, format=iter):
-    """Découpe les arcs en liste de couples"""
     it = iter(iterable)
     while True:
         yield format(chain((it.next(),), islice(it, taille - 1)))
 
-def nom_separateur(jt, ca, cb):
-    """Retourne le nom du séparateur entre deux cliques a et b d'un arbre de jonction jt"""    
+#Retourne le nom du séparateur entre deux cliques a et b d'un arbre de jonction jt
+def nom_separateur(jt, ca, cb):    
     res="Psi"
     for n in list(jt.clique(ca)):
         res += str(n)+"_"
@@ -97,6 +93,68 @@ def nom_separateur(jt, ca, cb):
         res += str(n)+"_"
     return res
                     
+#Absorption
+#Renvoie la liste des voisins de la clique c
+def neighbors(jt,c):
+    ls = jt.edges()
+    res = []
+    for i in ls:
+        if(i[0] == c):
+            res.append(i[1])
+        if(i[1] == c):
+            res.append(i[0])
+    return res
+
+#Retourne le nombre de voisins de la clique c
+def nbneighbors(jt,c):
+    return len(neighbors(jt,c))
+    
+#Retourne l privé de m, on s'en servira pour avoir la liste des voisins d'un noeud qui ont envoyé leur message.
+def lOum(l,m):
+    res = []    
+    for i in l:
+        if (not(i in m)):
+            res.append(i)
+    return res
+
+#Retourne l intersection m, on s'en servira pour avoir la liste des voisins d'un noeud qui n'ont pas envoyé leur message
+def lInterm(l,m):
+    res = []
+    for i in l:
+        if(i in l and i in m):
+            res.append(i)
+    return res
+#Absorption 
+def absorption(bn,jt, rac):
+    neigh = [] #liste dont le i ème élément est la liste des voisins de la  ième clique
+    nbneigh = [] #liste dont le i ème élément est le nombre de voisins de la i ème clique
+    for i in jt.ids():
+        neigh.append(neighbors(jt,i))
+        nbneigh.append(nbneighbors(jt,i))
+    
+    ls = jt.ids() #liste contenant tous les noeuds qui n'ont pas encore envoyé leur message
+    
+    
+    while len(ls) != 1:
+        suppr = []
+        for i in ls:
+            nomess = lInterm(neigh[i],ls) #Ce sont les voisins de i qui n'ont pas envoyé leur message
+            print("Voisins")            
+            print(neigh[i])
+            print("No mess")
+            print(nomess)
+            print("i")
+            print(i)
+            if(len(nomess) == 1 and i != rac):
+                print("Envoi du message de "+nomPotentiel(jt,i)+" à "+nomPotentiel(jt,nomess[0]))
+                print("Marginalistion de "+nom_separateur(jt, i, nomess[0])+" selon "+nomPotentiel(jt,i))
+                print("Multiplication de "+nomPotentiel(jt,nomess[0])+" par "+ nom_separateur(jt, i, nomess[0])+"\n")
+                suppr.append(i)
+        
+        for j in suppr:
+            ls.remove(j)
+        print("ls")
+        print(ls)
 #Reçoit un réseau bayésien et des évidences et calcule la probabilité des targets
 def metaCode(bn,evs,t):
     ie = gum.LazyPropagation(bn)
@@ -114,7 +172,7 @@ def metaCode(bn,evs,t):
     
     ids = nomPotentielEvs(bn,evs)
     for i in ids:
-        print("Création du potentiel : Ev"+str(i))
+        print("Création du potentiel : Ev_"+str(i))
     
     print("##########################################################")
     print("##### Ajout des variables à leur potentiel respectif #####")
@@ -144,14 +202,13 @@ def metaCode(bn,evs,t):
     print("#########################################")
     print("############# INFERENCE #################")
     print("#########################################")
+    rac = cliqueRacine(jt)
+    absorption(bn,jt,rac)
     
     
-bn = gum.loadBN("/home/ubuntu/Documents/BNS/asia.bif")
+bn = gum.loadBN("C:/Users/Marvin/Desktop/Informatique/Projet PIMA/testMetaBaysGen/BNs/Mildew.bif")
 target = ["dypsonae?","bronchitis?"]
 evs = {"smoking?":[1,0]}
 ie=gum.LazyPropagation(bn)
 jt = ie.junctionTree()
 metaCode(bn,evs, target)
-print(cliqueRacine(jt))
-print(jt.clique(4))
-jt.neighbors(4)
