@@ -15,9 +15,11 @@ Created on Tue Mar 17 23:24:09 2015
 
 import pyAgrum as gum
 import gumLib.notebook as gnb
-import itertools
-from collections import Counter
 
+from collections import Counter
+from itertools import chain, islice
+
+from debugGenerator import Generation
 
 #Génère des noms de potentiel
 def nomPotentiel(jt,c):
@@ -72,9 +74,9 @@ def evsPotentials(bn, jt, ids):
                 
 #Retourne la clique "racine" vers laquelle on fait converger l'information
 def cliqueRacine(jt):
-    c = Counter(list(itertools.chain(*jt.edges())))
+    c = Counter(list(chain(*jt.edges())))
     return c.most_common(1)[0][0]
-        
+
 #Initialisation des potentiels de séparateurs
 
 #Découpe les arcs en liste de couples
@@ -124,14 +126,21 @@ def lInterm(l,m):
         if(i in l and i in m):
             res.append(i)
     return res
-#Absorption 
-def absorption(bn,jt, rac):
-    neigh = [] #liste dont le i ème élément est la liste des voisins de la  ième clique
-    nbneigh = [] #liste dont le i ème élément est le nombre de voisins de la i ème clique
+
+#Retoure la liste dont le i ème élément est la liste des voisins de la  ième clique    
+def lsneighbors(jt):
+    neigh = {} 
     for i in jt.ids():
-        neigh.append(neighbors(jt,i))
-        nbneigh.append(nbneighbors(jt,i))
+        neigh[i]=neighbors(jt,i)
+    return neigh
+
+#Retourne la liste dont le i ème élément est le nombre de voisins de la i ème clique      
+def lsnbneighbors(jt):
+    return len(lsneighbors(jt))
     
+#Absorption
+def absorption(bn,jt, rac):
+    neigh = lsneighbors(jt)
     ls = jt.ids() #liste contenant tous les noeuds qui n'ont pas encore envoyé leur message
     
     
@@ -139,24 +148,22 @@ def absorption(bn,jt, rac):
         suppr = []
         for i in ls:
             nomess = lInterm(neigh[i],ls) #Ce sont les voisins de i qui n'ont pas envoyé leur message
-            print("Voisins")            
-            print(neigh[i])
-            print("No mess")
-            print(nomess)
-            print("i")
-            print(i)
             if(len(nomess) == 1 and i != rac):
                 print("Envoi du message de "+nomPotentiel(jt,i)+" à "+nomPotentiel(jt,nomess[0]))
-                print("Marginalistion de "+nom_separateur(jt, i, nomess[0])+" selon "+nomPotentiel(jt,i))
+                print("Marginalisation de "+nom_separateur(jt, i, nomess[0])+" selon "+nomPotentiel(jt,i))
                 print("Multiplication de "+nomPotentiel(jt,nomess[0])+" par "+ nom_separateur(jt, i, nomess[0])+"\n")
                 suppr.append(i)
         
-        for j in suppr:
-            ls.remove(j)
-        print("ls")
-        print(ls)
+        for i in suppr:
+            ls.remove(i)
+
+#Diffusion
+"""def diffusion(bn,jt,rac):"""
+
+    
+    
 #Reçoit un réseau bayésien et des évidences et calcule la probabilité des targets
-def metaCode(bn,evs,t):
+def metaCode(bn,evs,t,generator):
     ie = gum.LazyPropagation(bn)
     jt = ie.junctionTree()
   
@@ -164,11 +171,10 @@ def metaCode(bn,evs,t):
     print("###################################")
     print("##### Creation des potentiels #####")
     print("###################################")
-        
+   
     for c in jt.ids() :
-        res = "Creation du potentiel : "+nomPotentiel(jt,c)
-        print(res)
-    
+        res = "Création du potentiel : "+nomPotentiel(jt,c)
+                print(res)    
     
     ids = nomPotentielEvs(bn,evs)
     for i in ids:
@@ -205,10 +211,39 @@ def metaCode(bn,evs,t):
     rac = cliqueRacine(jt)
     absorption(bn,jt,rac)
     
+def ajouteFlag(jt,default):
+    fl={}
+    for i in jt.ids():
+        fl[i]=default
+    return fl
     
-bn = gum.loadBN("C:/Users/Marvin/Desktop/Informatique/Projet PIMA/testMetaBaysGen/BNs/Mildew.bif")
-target = ["dypsonae?","bronchitis?"]
-evs = {"smoking?":[1,0]}
+    
+def pitibn():
+    bn=gum.BayesNet()
+    a,b,c,d,e=[bn.add(gum.LabelizedVariable(s,s,2)) for s in 'abcde']
+    bn.addArc(a,b)
+    bn.addArc(a,c)
+    bn.addArc(b,d)
+    bn.addArc(c,d)
+    bn.addArc(e,c)
+
+    bn.generateCPTs()
+    return bn
+    
+#bn = gum.loadBN("C:/Users/Marvin/Desktop/Informatique/Projet PIMA/testMetaBaysGen/BNs/asia.bif")
+#target = ["dypsonae?","bronchitis?"]
+#evs = {"smoking?":[1,0]}
+
+#bn=pitibn()
+#target = []
+#evs= {}
+generator=DebugGeneration()
+bn = gum.loadBN("/home/ubuntu/Documents/BNS/asia.bif")
+target = []
+evs = {}
+
 ie=gum.LazyPropagation(bn)
 jt = ie.junctionTree()
-metaCode(bn,evs, target)
+metaCode(bn,evs, target,generator)
+showBN(bn,size="3")
+showJT(bn,size="3")
