@@ -4,39 +4,42 @@ Created on Tue Mar 24 14:39:48 2015
 
 @author: Marvin
 """
-
+import metacodeExtended as mce
 
 # API DE GENERATION DE CODE
 class Generation:
-    def __init__(this):
-        this.NBOP=0
+    def __init__(self):
+        print("Je sais pas quoi mettre là dedans")
         
-    def Marginalisation(this,cliq,var):
+    def Marginalisation(self,cliq,var):
         raise(NotImplemented)
 
-    def Multiplication(this,sep2,cliq,sep):
+    def Multiplication(self,sep2,cliq,sep):
         raise(NotImplemented)
     
-    def CreationPotentiel(this,jt,c):
+    def CreationPotentiel(self,jt,c):
         raise(NotImplemented)
-        #"{0:5} {1}".format(NBOP,res)
+        
+    def AjoutVariablePotentiel(self,jt,c):
+        raise(NotImplemented)
 
 
-class DebugGeneration(Generation):
-    def Marginalisation(this,cliq,var):
-        this.NBOP+=1
-        print(str(this.NBOP)+"Marginalisation de "+cliq+" selon "+var)
+class CompilGeneration(Generation):
+    def Marginalisation(self,cliq,var):
+        print("Marginalisation de "+cliq+" selon "+var)
 
-    def Multiplication(this,sep2,cliq,sep):
-        this.NBOP+=1
+    def Multiplication(self,sep2,cliq,sep):
         print("MULT")
     
-    def CreationPotentiel(this,jt,c):
-        this.NBOP+=1
-        res = "Creation du potentiel : "+nomPotentiel(jt,c)
-        print(str(NBOP)+res)
-        #"{0:5} {1}".format(NBOP,res)
+    def CreationPotentiel(self,jt,c):
+        print("Creation du potentiel : "+ mce.nomPotentiel(jt,c))
+    
+    def AjoutVariablePotentiel(self,jt,c,var):
+        print("Ajout de la variable "+str(var)+" au potentiel " +mce.nomPotentiel(jt,c))
+    
+    #def AjoutEvidencePotentiel(self,jt,c,)
+    
+    
 
     
 
-#
