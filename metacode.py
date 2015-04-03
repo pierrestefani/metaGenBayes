@@ -53,36 +53,33 @@ def evsPotentials(bn, jt, ids):
                 
 
 
-#Retourne le nom du séparateur entre deux cliques a et b d'un arbre de jonction jt
-def nom_separateur(jt, ca, cb):    
-    res="Psi"
-    for n in list(jt.clique(ca)):
-        res += str(n)+"_"
-    res+= "--"
-    for n in list(jt.clique(cb)):
-        res += str(n)+"_"
+#Parcours de l'arbre de jonction en profondeur : visites et res sont des listes vides lors de l'appel
+def parcours(jt, racine, visites, res):
+    visites.append(racine)
+    for i in mce.neighbors(jt, racine):
+        if (not i in visites):
+            res.append([racine, i])
+            parcours(jt,i,visites,res)
     return res
+    
+#Inversion du parcours en profondeur
+def inverser(parcours):
+    vd = list()
+    for i in parcours:
+        vd.append([i[1], i[0]])
+    return vd[::-1]
 
-
-    
-#Absorption
-def absorption(bn,jt, rac):
-    neigh = mce.lsneighbors(jt)
-    ls = jt.ids() #liste contenant tous les noeuds qui n'ont pas encore envoyé leur message
-    
-    
-    while len(ls) != 1:
-        suppr = []
-        for i in ls:
-            nomess = mce.lInterm(neigh[i],ls) #Ce sont les voisins de i qui n'ont pas envoyé leur message
-            if(len(nomess) == 1 and i != rac):
-                print("Envoi du message de "+mce.nomPotentiel(jt,i)+" à "+mce.nomPotentiel(jt,nomess[0]))
-                print("Marginalisation de "+nom_separateur(jt, i, nomess[0])+" selon "+mce.nomPotentiel(jt,i))
-                print("Multiplication de "+mce.nomPotentiel(jt,nomess[0])+" par "+ nom_separateur(jt, i, nomess[0])+"\n")
-                suppr.append(i)
+#absorption
+def absorption(jt):
+    visites = list()
+    prc_abs = list()
+    prc_abs = inverser(parcours(jt, mce.cliqueRacine(jt),visites,prc_abs))
+    for i in prc_abs:
+        print("Envoi du message de "+mce.nomPotentiel(jt,i[0])+" à "+mce.nomPotentiel(jt,i[1]))
+        print("Marginalisation de "+mce.nom_separateur(jt, i[0], i[1])+" selon "+mce.nomPotentiel(jt,i[0]))
+        print("Multiplication de "+mce.nomPotentiel(jt,i[1])+" par "+ mce.nom_separateur(jt, i[0], i[1])+"\n")
         
-        for i in suppr:
-            ls.remove(i)
+
 
 #Diffusion
 """def diffusion(bn,jt,rac):"""
@@ -129,19 +126,18 @@ def metaCode(bn,evs,t,generator):
     print("######################################################")
     #Création du potentiel séparateur
     for n in mce.couples_cliques(jt.edges(), 1, list) :
-        print("Création du potentiel "+nom_separateur(jt, n[0][0], n[0][1]))
+        print("Création du potentiel "+mce.nom_separateur(jt, n[0][0], n[0][1]))
     #Ajout des variables (ie : les variables dans le séparateur)
     for n in mce.couples_cliques(jt.edges(), 1, list) :
         for c in n:
             for i in list(jt.clique(c[0]).intersection(jt.clique(c[1]))):
-                print("Ajout de la variable "+str(i)+" au potentiel "+nom_separateur(jt, c[0], c[1]))
+                print("Ajout de la variable "+str(i)+" au potentiel "+ mce.nom_separateur(jt, c[0], c[1]))
 
    
     print("#########################################")
     print("############# INFERENCE #################")
     print("#########################################")
-    rac = mce.cliqueRacine(jt)
-    absorption(bn,jt,rac)
+    absorption(jt)
     
 def ajouteFlag(jt,default):
     fl={}
