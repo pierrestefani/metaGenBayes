@@ -49,37 +49,15 @@ def neighbors(jt,c):
 def nbneighbors(jt,c):
     return len(neighbors(jt,c))
 
-""" CODE ABSORPTION LOURD TEMPORAIRE """
 
-#Retourne l privé de m, on s'en servira pour avoir la liste des voisins d'un noeud qui ont envoyé leur message.
-def lOum(l,m):
-    res = []    
-    for i in l:
-        if (not(i in m)):
-            res.append(i)
+#Retourne le nom du séparateur entre deux cliques a et b d'un arbre de jonction jt
+def nom_separateur(jt, ca, cb):    
+    res="Psi"
+    for n in list(jt.clique(ca)):
+        res += str(n)+"_"
+    res+= "--"
+    for n in list(jt.clique(cb)):
+        res += str(n)+"_"
     return res
-    
-#Retourne l intersection m, on s'en servira pour avoir la liste des voisins d'un noeud qui n'ont pas envoyé leur message
-def lInterm(l,m):
-    res = []
-    for i in l:
-        if(i in l and i in m):
-            res.append(i)
-    return res
-    
-#Retoure la liste dont le i ème élément est la liste des voisins de la  ième clique    
-def lsneighbors(jt):
-    neigh = {} 
-    for i in jt.ids():
-        neigh[i]=neighbors(jt,i)
-    return neigh
-    
-
-#Retourne la liste dont le i ème élément est le nombre de voisins de la i ème clique      
-def lsnbneighbors(jt):
-    return len(lsneighbors(jt))
-    
-"""FIN"""
-
 
 
