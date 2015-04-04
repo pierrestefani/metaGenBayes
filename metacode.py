@@ -82,8 +82,18 @@ def absorption(jt):
 
 
 #Diffusion
-"""def diffusion(bn,jt,rac):"""
-
+def diffusion(jt):
+    visites = list()
+    prc_diff = list()
+    prc_diff = parcours(jt,mce.cliqueRacine(jt),visites,prc_diff)
+    
+    for i in prc_diff:
+        print("Creation du potentiel : "+ mce.nomPotentiel(jt,i[0])+"'")
+        for j in mce.neighbors(jt, i[0]):
+            if (j!=i[1]):
+                print("Multiplication de "+mce.nomPotentiel(jt,i[0])+"' par "+ mce.nom_separateur(jt, i[0], j))
+        print("Envoi du message de "+mce.nomPotentiel(jt,i[0])+"' à "+mce.nomPotentiel(jt,i[1]))
+        print("\n")   
     
     
 #Reçoit un réseau bayésien et des évidences et calcule la probabilité des targets
@@ -136,8 +146,11 @@ def metaCode(bn,evs,t,generator):
    
     print("#########################################")
     print("############# INFERENCE #################")
-    print("#########################################")
+    print("#########################################\n")
+    print("############# absorption ################")
     absorption(jt)
+    print("############# diffusion #################")
+    diffusion(jt)
     
 def ajouteFlag(jt,default):
     fl={}
