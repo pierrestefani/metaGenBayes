@@ -47,7 +47,7 @@ def neighbors(jt,c):
 
 #Retourne le nombre de voisins de la clique c
 def nbneighbors(jt,c):
-    return len(neighbors(jt,c))
+        return len(neighbors(jt,c))
 
 
 #Retourne le nom du séparateur entre deux cliques a et b d'un arbre de jonction jt
@@ -58,6 +58,27 @@ def nom_separateur(jt, ca, cb):
     res+= "--"
     for n in list(jt.clique(cb)):
         res += str(n)+"_"
+    return res
+
+
+def idsOfTargets(bn, target):
+    """Retourne les ids de chaque target donnée pour le réseau bayésien considéré"""
+    res=list()
+    for i in bn.ids():
+        if (bn.variable(i).name() in target):
+            res.append(i)
+    return res
+
+
+def cliquesOfTargets(jt,bn,target):
+    """Retourne le couple [target, clique de la target considéré]"""
+    res = []
+    sel = []
+    for c in jt.ids():
+        for n in jt.clique(c):
+            if (n in idsOfTargets(bn,target) and (n not in sel)):
+                res.append([n,c])
+                sel.append(n)
     return res
 
 

@@ -76,7 +76,8 @@ def absorption(jt):
     prc_abs = inverser(parcours(jt, mce.cliqueRacine(jt),visites,prc_abs))
     for i in prc_abs:
         print("Envoi du message de "+mce.nomPotentiel(jt,i[0])+" à "+mce.nomPotentiel(jt,i[1]))
-        print("Marginalisation de "+mce.nom_separateur(jt, i[0], i[1])+" selon "+mce.nomPotentiel(jt,i[0]))
+        #print("Marginalisation de "+mce.nom_separateur(jt, i[0], i[1])+" selon "+mce.nomPotentiel(jt,i[0]))
+        generator.Marginalisation(mce.nom_separateur(jt, i[0], i[1]),mce.nomPotentiel(jt,i[0]))
         print("Multiplication de "+mce.nomPotentiel(jt,i[1])+" par "+ mce.nom_separateur(jt, i[0], i[1])+"\n")
         
 
@@ -94,7 +95,23 @@ def diffusion(jt):
                 print("Multiplication de "+mce.nomPotentiel(jt,i[0])+"' par "+ mce.nom_separateur(jt, i[0], j))
         print("Envoi du message de "+mce.nomPotentiel(jt,i[0])+"' à "+mce.nomPotentiel(jt,i[1]))
         print("\n")   
-    
+
+#Sortie
+
+def sortie(jt):
+    for i in mce.cliquesOfTargets(jt,bn,target):
+        print("Création du potentiel : Tr_"+ str(i[0]))
+        print("Ajout de la variable "+str(i[0])+" à Tr_"+ str(i[0]))
+        generator.Marginalisation("Tr_"+str(i[0]),mce.nomPotentiel(jt, i[1]))
+        print("Normalisation de Tr_"+str(i[0]))
+        print("\n")
+
+
+
+
+
+
+
     
 #Reçoit un réseau bayésien et des évidences et calcule la probabilité des targets
 def metaCode(bn,evs,t,generator):
@@ -152,6 +169,11 @@ def metaCode(bn,evs,t,generator):
     print("############# diffusion #################")
     diffusion(jt)
     
+    print("#########################################")
+    print("############# SORTIE #################")
+    print("#########################################\n")
+    sortie(jt)
+    
 def ajouteFlag(jt,default):
     fl={}
     for i in jt.ids():
@@ -180,7 +202,7 @@ def pitibn():
 #evs= {}
 generator = CompilGeneration()
 bn = gum.loadBN("/home/ubuntu/Documents/BNS/asia.bif")
-target = []
+target = ["dyspnoea?","tuberculosis?"]
 evs = {"smoking?":[1,0]}
 
 ie=gum.LazyPropagation(bn)
