@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Mar 22 16:42:05 2015
-
 @author: ubuntu
 """
 
 # -*- coding: utf-8 -*-
 """
 Created on Tue Mar 17 23:24:09 2015
-
 @author: Marvin
 """
 
 import pyAgrum as gum
 import gumLib.notebook as gnb
-
 import metacodeExtended as mce
 
 from debugGenerator import CompilGeneration
@@ -53,65 +50,42 @@ def evsPotentials(bn, jt, ids):
                 
 
 
-#Parcours de l'arbre de jonction en profondeur : visites et res sont des listes vides lors de l'appel
-def parcours(jt, racine, visites, res):
-    visites.append(racine)
-    for i in mce.neighbors(jt, racine):
-        if (not i in visites):
-            res.append([racine, i])
-            parcours(jt,i,visites,res)
-    return res
-    
-#Inversion du parcours en profondeur
-def inverser(parcours):
-    vd = list()
-    for i in parcours:
-        vd.append([i[1], i[0]])
-    return vd[::-1]
+def parcours(jt, target, n, r, absorp, diffu):
+    '''Parcourt l'arbre en profondeur, enregistre dans deux listes les parcours respectifs utilisés dans l'absorption et la diffusion'''
+    ls = mce.neighbors(jt,n)
+    if(r in ls):
+        ls.remove(r)
+    if(len(ls) == 0):
+        return False
+    for i in ls:
+            tv = parcours(jt,target,i,n, absorp, diffu)
+            tar = tv or mce.isTarget(bn,jt,target,i)
+            absorp.append([i,n])
+            if(tar):
+                diffu.insert(0,[n,i])
+    return tar
+
+
 
 #absorption
-def absorption(jt):
-    visites = list()
-    prc_abs = list()
-    prc_abs = inverser(parcours(jt, mce.cliqueRacine(jt),visites,prc_abs))
+def absorption_diffusion(jt):
+    prc_abs = []
+    prc_diff = []
+    parcours(jt,target,mce.cliqueRacine(bn,jt,target),mce.cliqueRacine(bn,jt,target),prc_abs,prc_diff)
     for i in prc_abs:
         print("Envoi du message de "+mce.nomPotentiel(jt,i[0])+" à "+mce.nomPotentiel(jt,i[1]))
-        #print("Marginalisation de "+mce.nom_separateur(jt, i[0], i[1])+" selon "+mce.nomPotentiel(jt,i[0]))
-        generator.Marginalisation(mce.nom_separateur(jt, i[0], i[1]),mce.nomPotentiel(jt,i[0]))
+        print("Marginalisation de "+mce.nom_separateur(jt, i[0], i[1])+" selon "+mce.nomPotentiel(jt,i[0]))
         print("Multiplication de "+mce.nomPotentiel(jt,i[1])+" par "+ mce.nom_separateur(jt, i[0], i[1])+"\n")
         
-
-
-#Diffusion
-def diffusion(jt):
-    visites = list()
-    prc_diff = list()
-    prc_diff = parcours(jt,mce.cliqueRacine(jt),visites,prc_diff)
-    
     for i in prc_diff:
         print("Creation du potentiel : "+ mce.nomPotentiel(jt,i[0])+"'")
         for j in mce.neighbors(jt, i[0]):
             if (j!=i[1]):
                 print("Multiplication de "+mce.nomPotentiel(jt,i[0])+"' par "+ mce.nom_separateur(jt, i[0], j))
         print("Envoi du message de "+mce.nomPotentiel(jt,i[0])+"' à "+mce.nomPotentiel(jt,i[1]))
-        print("\n")   
+        print("\n")      
 
-#Sortie
-
-def sortie(jt):
-    for i in mce.cliquesOfTargets(jt,bn,target):
-        print("Création du potentiel : Tr_"+ str(i[0]))
-        print("Ajout de la variable "+str(i[0])+" à Tr_"+ str(i[0]))
-        generator.Marginalisation("Tr_"+str(i[0]),mce.nomPotentiel(jt, i[1]))
-        print("Normalisation de Tr_"+str(i[0]))
-        print("\n")
-
-
-
-
-
-
-
+   
     
 #Reçoit un réseau bayésien et des évidences et calcule la probabilité des targets
 def metaCode(bn,evs,t,generator):
@@ -164,15 +138,7 @@ def metaCode(bn,evs,t,generator):
     print("#########################################")
     print("############# INFERENCE #################")
     print("#########################################\n")
-    print("############# absorption ################")
-    absorption(jt)
-    print("############# diffusion #################")
-    diffusion(jt)
-    
-    print("#########################################")
-    print("############# SORTIE #################")
-    print("#########################################\n")
-    sortie(jt)
+    absorption_diffusion(jt)
     
 def ajouteFlag(jt,default):
     fl={}
@@ -200,9 +166,9 @@ def pitibn():
 #bn=pitibn()
 #target = []
 #evs= {}
-generator = CompilGeneration()
-bn = gum.loadBN("/home/ubuntu/Documents/BNS/asia.bif")
-target = ["dyspnoea?","tuberculosis?"]
+"""generator = CompilGeneration()
+bn = gum.loadBN("C:/Users/Marvin/Desktop/Informatique/Projet PIMA/testMetaBaysGen/BNs/Asia.bif")
+target = ["bronchitis?","visit_to_Asia?"]
 evs = {"smoking?":[1,0]}
 
 ie=gum.LazyPropagation(bn)
@@ -210,3 +176,21 @@ jt = ie.junctionTree()
 metaCode(bn,evs, target,generator)
 showBN(bn,size="3")
 showJT(bn,size="3")
+visites = []
+x = mce.cliqueRacine2(bn, jt, target)
+res = []
+n = x
+r = x
+parcours2(jt, target, n, r, res)
+print("res")
+print(res)"""
+
+generator = CompilGeneration()
+bn = gum.loadBN("/home/ubuntu/Documents/BNS/Mildew.bif")
+target = ["udbytte","dm_1"]
+evs = {"smoking?":[1,0]}
+ie=gum.LazyPropagation(bn)
+jt = ie.junctionTree()
+metaCode(bn,evs, target,generator)
+#showBN(bn,size="20")
+#showJT(bn,size="20")

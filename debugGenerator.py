@@ -4,7 +4,7 @@ Created on Tue Mar 24 14:39:48 2015
 
 @author: Marvin
 """
-import metacodeExtended as mce
+import metamarvinExtended as mce
 
 # API DE GENERATION DE CODE
 class Generation:
@@ -43,3 +43,4 @@ class CompilGeneration(Generation):
 
     
 
+#hiérarchiser, debug gen et pyAgrum gen
