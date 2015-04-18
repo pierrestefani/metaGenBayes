@@ -4,7 +4,7 @@ Created on Tue Mar 24 14:39:48 2015
 
 @author: Marvin
 """
-import metamarvinExtended as mce
+import metacodeExtended as mce
 
 # API DE GENERATION DE CODE
 class Generation:

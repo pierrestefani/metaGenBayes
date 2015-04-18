@@ -186,8 +186,8 @@ print("res")
 print(res)"""
 
 generator = CompilGeneration()
-bn = gum.loadBN("/home/ubuntu/Documents/BNS/Mildew.bif")
-target = ["udbytte","dm_1"]
+bn = gum.loadBN("/home/ubuntu/Documents/BNS/asia.bif")
+target = ["dyspnoea?","tuberculosis?"]
 evs = {"smoking?":[1,0]}
 ie=gum.LazyPropagation(bn)
 jt = ie.junctionTree()
