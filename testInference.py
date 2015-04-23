@@ -21,7 +21,7 @@ generator = debugGenerator()
 generator.genere(comp, "test.py", "getValue")
 """
 
-import Compilator as compilator
+import metacode_compilation as compilator
 from pyAgrumGenerator import pyAgrumGenerator
 import pyAgrum as gum
 #import os
