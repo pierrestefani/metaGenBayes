@@ -31,6 +31,7 @@ class pyAgrumGenerator:
         flux = open(nomfichier,'w')
         flux.write("import pyAgrum as gum\n\n")
         flux.write("def "+nomfonc+":\n")
+        flux.write("\tsortie = list()\n")
         for cur in comp:
             act = cur[0]
             if act == 'CPO':
@@ -45,8 +46,15 @@ class pyAgrumGenerator:
                 flux.write(self.margi(cur[1],cur[2]))
             elif act == 'NOR':
                 flux.write(self.norm(cur[1]))
+                flux.write("\tsortie.append("+str(cur[1])+")\n")
             elif act == 'FIL':
                 flux.write(self.fill(cur[1],cur[2]))
+        flux.write("\treturn sortie")
+        
+        flux.write("\n\ndef affichage_resultats(bn):\n")
+        flux.write("\tfor i in "+nomfonc+":\n")
+        flux.write("\t\tprint(i)\n")
+               
         flux.close()
         
 
