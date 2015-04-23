@@ -36,7 +36,7 @@ bn.addArc(c,d)
 bn.addArc(e,c)
 bn.generateCPTs()
 
-target = ["d"]
+target = ["d","a"]
 evs = {"e":[1,0]}
 
 comp = compilator.compil(bn, target, evs)
