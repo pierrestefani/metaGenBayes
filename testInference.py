@@ -37,7 +37,7 @@ bn.addArc(e,c)
 bn.generateCPTs()
 
 target = ["d","a"]
-evs = {"e":[1,0]}
+evs = {"e":[1,0], "b":[0.25,0.75]}
 
 comp = compilator.compil(bn, target, evs)
 generator = pyAgrumGenerator()
