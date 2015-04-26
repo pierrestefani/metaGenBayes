@@ -47,7 +47,7 @@ def nomPotentielEvs(bn, evs):
     res=list()
     for i in bn.ids():
         if(evs.has_key(bn.variable(i).name())):
-            res.append(i)
+            res.append([i,bn.variable(i).name()])
     return res
     
 def evsPotentiels(bn, jt , evs):
@@ -55,19 +55,22 @@ def evsPotentiels(bn, jt , evs):
     ids = nomPotentielEvs(bn, evs)
     for i in ids:
         for j in jt.ids():
-            if (i in jt.clique(j)):
+            if (i[0] in jt.clique(j)):
                 b = 1
-                for l in bn.parents(i):
+                for l in bn.parents(i[0]):
                     if(not(l in jt.clique(j))):
                         b = 0
                         break
                 if(b == 1):
-                    for index in enumerate(ids): 
-                        compilator.creerPotentielClique("EV_"+str(i))
-                        compilator.assigneVariablePotentiel(str(i), "EV_"+str(i))
-                        compilator.fillPotentiel(nomPotentiel(jt,j),0)
-                        compilator.multiplicationPotentiels(nomPotentiel(jt,j),"EV_"+str(i))
-                    break
+                    #index, enumerate... supprimés (résultats toujours corrects)
+                    compilator.creerPotentielClique("EV_"+str(i[0]))
+                    compilator.assigneVariablePotentiel(str(i[0]), "EV_"+str(i[0]))
+                    compilator.fillPotentiel("EV_"+str(i[0]),0)
+                    cpt = 0
+                    for v in evs.get(i[1]):
+                        compilator.assigneSoftEvidencePotentiel(str(i[1]), "EV_"+str(i[0]), str(cpt), str(v))
+                        cpt = cpt + 1
+                    compilator.multiplicationPotentiels(nomPotentiel(jt,j),"EV_"+str(i[0]))
     return res
 
 def neighbors(jt,c):
