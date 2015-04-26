@@ -17,6 +17,10 @@ class Compilation:
     def assigneVariablePotentiel(self,var,cliq):
         self.tab.append(["ADV", var, cliq])      
     
+    def assigneSoftEvidencePotentiel(self,evid,cliq,index,value):
+        '''Gère l'assignation d'évidences de type {'vraisemblance : [value, value2,...]}'''
+        self.tab.append(["ASE", evid, cliq, index, value])
+    
     def fillPotentiel(self, cliq, value):
         self.tab.append(["FIL", cliq, value])
 
