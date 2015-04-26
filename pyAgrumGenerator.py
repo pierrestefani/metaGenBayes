@@ -12,6 +12,9 @@ class pyAgrumGenerator:
     def addVarPot(self,var,nompot):
         return("\t"+str(nompot)+".add(bn.variable("+str(var)+"))\n")
         
+    def addSoftEvPot(self,evid,nompot,index,value):
+        return("\t"+str(nompot)+"[{'"+str(evid)+"':"+index+"}]="+value+"\n")
+    
     def mulPotCpt(self,nompot, var):
         return("\t"+str(nompot)+".multiplicateBy(bn.cpt("+str(var)+"))\n")
     
@@ -38,6 +41,8 @@ class pyAgrumGenerator:
                 flux.write(self.creaPot(cur[1]))
             elif act == 'ADV':
                 flux.write(self.addVarPot(cur[1],cur[2]))
+            elif act == 'ASE':
+                flux.write(self.addSoftEvPot(cur[1],cur[2],cur[3],cur[4]))
             elif act == 'MUC':
                 flux.write(self.mulPotCpt(cur[1],cur[2]))
             elif act == 'MUL':
@@ -49,6 +54,8 @@ class pyAgrumGenerator:
                 flux.write("\tsortie.append("+str(cur[1])+")\n")
             elif act == 'FIL':
                 flux.write(self.fill(cur[1],cur[2]))
+                #if (cur[2] == 0):
+                    #flux.write("\t"+str(cur[1])+"['])
         flux.write("\treturn sortie")
         
         flux.write("\n\ndef affichage_resultats(bn):\n")
