@@ -36,9 +36,25 @@ bn.addArc(c,d)
 bn.addArc(e,c)
 bn.generateCPTs()
 
-target = ["d","a"]
+targets = ["d","a"]
 evs = {"e":[1,0], "b":[0.25,0.75]}
 
-comp = compilator.compil(bn, target, evs)
+print("** Version aGrUM **")
+ie=gum.LazyPropagation(bn)
+ie.setEvidence(evs)
+ie.makeInference()
+for t in targets:
+    print(ie.posterior(bn.idFromName(t)))
+
+print("** Génération pyAgrum **")
+comp = compilator.compil(bn, targets[:], evs)
 generator = pyAgrumGenerator()
-generator.genere(comp, "testpyAg.py", "getValue(bn)")
+generator.genere(comp, "generated.py", "getValue(bn)")
+
+from generated import getValue
+for i in getValue(bn):
+    print(i)
+
+
+print("** Génération PHP **")
+print("to be done")
