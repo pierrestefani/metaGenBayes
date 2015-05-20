@@ -3,7 +3,7 @@
 Created on Tue Mar 24 14:39:48 2015
 @author: Marvin
 """
-# API DE GENERATION DE CODE
+# Code generation API
 from AbstractGenerator import AbstractGenerator
 
 class debugGenerator(AbstractGenerator):    
@@ -25,7 +25,7 @@ class debugGenerator(AbstractGenerator):
     def norm(self, nompot):
         return("\tNormalisation de "+str(nompot)+"\n")
     
-    def fill(self, pot, num): #??? Que fait fill dans inférence à la main ???
+    def fill(self, pot, num): 
         return("\tFill"+str(num)+" de "+str(pot))
     
     def genere(self, comp, nomfichier, nomfonc):

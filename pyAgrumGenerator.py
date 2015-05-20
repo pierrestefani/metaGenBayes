@@ -32,6 +32,7 @@ class pyAgrumGenerator:
     
     def genere(self, comp, nomfichier, nomfonc):
         flux = open(nomfichier,'w')
+        flux.write("'''This code was generated for pyAgrum use, compiled by Compiler.py and generated with pyAgrumGenerator.py.\nIt shouldn't be altered here'''\n")
         flux.write("import pyAgrum as gum\n\n")
         flux.write("def "+nomfonc+":\n")
         flux.write("\tsortie = list()\n")
@@ -57,11 +58,7 @@ class pyAgrumGenerator:
                 #if (cur[2] == 0):
                     #flux.write("\t"+str(cur[1])+"['])
         flux.write("\treturn sortie")
-        
-        flux.write("\n\ndef affichage_resultats(bn):\n")
-        flux.write("\tfor i in "+nomfonc+":\n")
-        flux.write("\t\tprint(i)\n")
-               
+
         flux.close()
         
 

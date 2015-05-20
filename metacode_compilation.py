@@ -6,28 +6,28 @@ Created on Tue Apr 21 23:50:21 2015
 """
 
 import pyAgrum as gum
-from Compilation import Compilation
+from Compiler import Compiler
 #import metacodeExtended as mce
 
-def nomPotentiel(jt,c):
-    """Retourne le nom du potentiel de la clique c"""
+def labelPotential(jt,c):
+    """Get the name of the potential for a clique c"""
     res="Phi"
     for n in jt.clique(c):
         res += str(n)+"_"
     return res
     
-def creationPotentiels(jt):
-    """Renvoie la liste des actions à effecteur pour créer les potentiels des cliques et leur affecte leurs variables"""
+def creationPotentials(jt):
+    """Fill the compiler array of instructions in order to create the potentials and add the corresponding variables"""
     res = []
     for i in jt.ids():
-        compilator.creerPotentielClique(nomPotentiel(jt,i))
+        compilator.createPotentialClique(labelPotential(jt,i))
         for j in jt.clique(i):
-            compilator.assigneVariablePotentiel(str(j), nomPotentiel(jt, i))
-        compilator.fillPotentiel(nomPotentiel(jt,i),1)
+            compilator.addVariablePotential(str(j), labelPotential(jt, i))
+        compilator.fillPotential(labelPotential(jt,i),1)
     return res
 
-def initPotentiels(bn,jt):
-    """Initialise les potentiels des cliques"""
+def initPotentials(bn,jt):
+    """Instructions for the initialization of the potentials"""
     res = []    
     for i in bn.ids():
         for j in jt.ids():        
@@ -38,21 +38,22 @@ def initPotentiels(bn,jt):
                         b = 0
                         break
                 if(b == 1):
-                    compilator.multiplicationCPT(nomPotentiel(jt,j),str(i))
+                    compilator.multiplicationCPT(labelPotential(jt,j),str(i))
                     break
     return res
     
-def nomPotentielEvs(bn, evs):
-    """Retourne la liste des noeuds du bn qui sont une évidence"""
+def labelPotentialEvs(bn, evs):
+    """Returns a list of every nodes of the BN who contains an evidence"""
     res=list()
     for i in bn.ids():
         if(evs.has_key(bn.variable(i).name())):
             res.append([i,bn.variable(i).name()])
     return res
     
-def evsPotentiels(bn, jt , evs):
+def evsPotentials(bn, jt , evs):
+    '''Instructions to create, fill and initialize the potentials of soft evidences'''
     res = [] 
-    ids = nomPotentielEvs(bn, evs)
+    ids = labelPotentialEvs(bn, evs)
     for i in ids:
         for j in jt.ids():
             if (i[0] in jt.clique(j)):
@@ -63,18 +64,18 @@ def evsPotentiels(bn, jt , evs):
                         break
                 if(b == 1):
                     #index, enumerate... supprimés (résultats toujours corrects)
-                    compilator.creerPotentielClique("EV_"+str(i[0]))
-                    compilator.assigneVariablePotentiel(str(i[0]), "EV_"+str(i[0]))
-                    compilator.fillPotentiel("EV_"+str(i[0]),0)
+                    compilator.createPotentialClique("EV_"+str(i[0]))
+                    compilator.addVariablePotential(str(i[0]), "EV_"+str(i[0]))
+                    compilator.fillPotential("EV_"+str(i[0]),0)
                     cpt = 0
                     for v in evs.get(i[1]):
-                        compilator.assigneSoftEvidencePotentiel(str(i[1]), "EV_"+str(i[0]), str(cpt), str(v))
+                        compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), str(v))
                         cpt = cpt + 1
-                    compilator.multiplicationPotentiels(nomPotentiel(jt,j),"EV_"+str(i[0]))
+                    compilator.multiplicationPotentials(labelPotential(jt,j),"EV_"+str(i[0]))
     return res
 
 def neighbors(jt,c):
-    """Retourne la liste des voisins de la clique c"""
+    """List of all the direct neighbors of a clique c in a junction tree jt"""
     ls = jt.edges()
     res = []
     for i in ls:
@@ -85,18 +86,18 @@ def neighbors(jt,c):
     return res
 
 def nbneighbors(jt,c):
-    """Retourne le nombre de voisins de la clique c"""
     return len(neighbors(jt,c))
 
 def isTarget(bn,jt,target,n):
+    '''Verifies if a clique n contains a target'''
     for i in target:
         if(bn.idFromName(i) in jt.clique(n)):
             return True
     return False
     
-def cliqueRacine(bn,jt,target):
-    """Retourne la clique "racine" vers laquelle on fait converger l'information"""
-    maxi = -1 #contient le nombre de voisins de la clique contenant le plus de voisins et contenant au moins une target
+def mainClique(bn,jt,target):
+    """Gives the main clique of a junction where the information will be focused"""
+    maxi = -1 #count how many neighbors the clique with the most neighbours and having at least a target has
     for i in jt.ids():
         for j in target:
             if(bn.idFromName(j) in jt.clique(i)):
@@ -106,7 +107,7 @@ def cliqueRacine(bn,jt,target):
     return res
     
 def parcours(bn, jt, target, n, r, absorp, diffu):
-    """Renvoie la liste à parcourir pour l'absorption et la diffusion"""
+    """Returns two lists fot he absoprtion and the diffusion of the information in the junction tree"""
     ls = neighbors(jt,n)
     if(r in ls):
         ls.remove(r)
@@ -120,7 +121,7 @@ def parcours(bn, jt, target, n, r, absorp, diffu):
                 diffu.insert(0,[n,i])
     return tar
 
-def nom_separateur(jt, ca, cb):    
+def labelSeparator(jt, ca, cb):    
     res="Psi"
     for n in list(jt.clique(ca)):
         res += str(n)+"_"
@@ -137,26 +138,26 @@ def AinterB(la,lb):
     return res
     
 def sendMessAbsor(bn, jt, ca, cb):
-    """Renvoie la liste des actions à effectuer pour envoyer le message de ca à cb"""
-    np = nom_separateur(jt, ca, cb) 
-    compilator.creerPotentielClique(np)
+    """Updates the compiler array with inscrutions to send the message from ca to cb"""
+    np = labelSeparator(jt, ca, cb) 
+    compilator.createPotentialClique(np)
     for i in AinterB(jt.clique(ca), jt.clique(cb)):
-        compilator.assigneVariablePotentiel(str(i), np)
-    compilator.marginalisation(np, nomPotentiel(jt,ca))
-    compilator.multiplicationPotentiels(nomPotentiel(jt,cb), np)
+        compilator.addVariablePotential(str(i), np)
+    compilator.marginalisation(np, labelPotential(jt,ca))
+    compilator.multiplicationPotentials(labelPotential(jt,cb), np)
 
 def sendMessDiffu(bn, jt, ca, cb):
-    """Renvoie la liste des actions à effectuer pour envoyer le message de ca à cb"""
-    np = nom_separateur(jt, ca, cb)+"dif"   #le dif nous sert de '
-    compilator.creerPotentielClique(np)
+    """Updates the compiler array with instructions for the diffusion"""
+    np = labelSeparator(jt, ca, cb)+"dif"   #two different potential variables are used for absorption and diffusion in order to keep some of the results in certain nodes
+    compilator.createPotentialClique(np)
     for i in AinterB(jt.clique(ca), jt.clique(cb)):
-        compilator.assigneVariablePotentiel(str(i), np)
-    compilator.marginalisation(np, nomPotentiel(jt,ca))
-    compilator.multiplicationPotentiels(nomPotentiel(jt,cb), np)
+        compilator.addVariablePotential(str(i), np)
+    compilator.marginalisation(np, labelPotential(jt,ca))
+    compilator.multiplicationPotentials(labelPotential(jt,cb), np)
 
 def inference(bn, jt, target): 
-    """Effectue l'inférence (absorption + diffusuion) du bn donné en fonction des targets"""
-    r = cliqueRacine(bn, jt, target)
+    """Considering the targets of a bn, inference does the absorption and the diffusion of the information"""
+    r = mainClique(bn, jt, target)
     n = r
     absorp = []
     diffu = []
@@ -169,53 +170,53 @@ def inference(bn, jt, target):
             sendMessDiffu(bn, jt, i[0], i[1])
 
     
-def sortie(bn,jt,target): 
-    """De la dernière clique à la sortie et la normalisation de notre target (implémentation naïve)"""    
-    rac = cliqueRacine(bn,jt,target)
+def output(bn,jt,target): 
+    """Instructions for the last cliques to be normalized and return the results for respective targets"""    
+    rac = mainClique(bn,jt,target)
     ls = target
-    #On s'occupe des target qui sont dans la racine
+    #Targets who are still in the main clique
     for i in target:
         x = bn.idFromName(i)
         if(x in jt.clique(rac)):
-            compilator.creerPotentielClique("P_"+str(x))
-            compilator.assigneVariablePotentiel(str(x), "P_"+str(x))
-            compilator.marginalisation("P_"+str(x), nomPotentiel(jt,rac))
+            compilator.createPotentialClique("P_"+str(x))
+            compilator.addVariablePotential(str(x), "P_"+str(x))
+            compilator.marginalisation("P_"+str(x), labelPotential(jt,rac))
             compilator.normalisation("P_"+str(x))
             ls.remove(i)
             break
-    #Puis on s'occupe des autres target
+    #All the other targets
     for i in ls:
         for j in jt.ids():
             x = bn.idFromName(i)
             if(x in jt.clique(j)):
-                compilator.creerPotentielClique("P_"+str(x))
-                compilator.assigneVariablePotentiel(str(x), "P_"+str(x))
-                compilator.marginalisation("P_"+str(x), nomPotentiel(jt,j))
+                compilator.createPotentialClique("P_"+str(x))
+                compilator.addVariablePotential(str(x), "P_"+str(x))
+                compilator.marginalisation("P_"+str(x), labelPotential(jt,j))
                 compilator.normalisation("P_"+str(x))
                 break
                 
     
-compilator=Compilation()
+compilator=Compiler()
     
 def compil(bn,target,evs):
-    """Retourne la liste des actions à effectuer jusqu'au calcul des targets"""
+    """This function uses all the predefined functions above to fill the compiler array with instructions to get the targets of a bn according to evidences"""
     ie=gum.LazyPropagation(bn)
     jt = ie.junctionTree()
     
     #Creation des potentiels des cliques et ajout des variables à leur potentiel respectif.
-    creationPotentiels(jt)
-    """ne pas oublier de fill pour PyAgrum, voir inférence à la main"""
+    creationPotentials(jt)
+
     #Initialisation des potentiels
-    initPotentiels(bn, jt)
+    initPotentials(bn, jt)
     
     #Potentiel des évidences
-    evsPotentiels(bn,jt,evs)
+    evsPotentials(bn,jt,evs)
                 
     #Absorption et diffusion
     inference(bn, jt, target)
     
     #Calcul des targets
-    sortie(bn,jt,target)
+    output(bn,jt,target)
 
     return compilator.getTab()
     
