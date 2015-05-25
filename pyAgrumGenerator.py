@@ -4,6 +4,7 @@ Created on Wed Apr 22 21:10:26 2015
 
 @author: Marvin
 """
+import time
 
 class pyAgrumGenerator:    
     def creaPot(self,nompot):
@@ -30,35 +31,36 @@ class pyAgrumGenerator:
     def fill(self, pot, num): #??? Que fait fill dans inférence à la main ???
         return("\t"+str(pot)+".fill("+str(num)+")\n")
     
-    def genere(self, comp, nomfichier, nomfonc):
-        flux = open(nomfichier,'w')
-        flux.write("'''This code was generated for pyAgrum use, compiled by Compiler.py and generated with pyAgrumGenerator.py.\nIt shouldn't be altered here'''\n")
-        flux.write("import pyAgrum as gum\n\n")
-        flux.write("def "+nomfonc+":\n")
-        flux.write("\tsortie = list()\n")
+    def genere(self, bn, targets, evs, comp, nameFile, nameFunc):
+        stream = open(nameFile,'w')
+        stream.write("'''This code was generated for pyAgrum use, compiled by Compiler.py and generated with pyAgrumGenerator.py.\nIt shouldn't be altered here'''\n")
+        stream.write("import pyAgrum as gum\n\n")
+        stream.write("'''Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"'''\n\n")
+        stream.write("def "+nameFunc+"(bn,evs):\n")
+        stream.write("\tres = list()\n")
         for cur in comp:
             act = cur[0]
             if act == 'CPO':
-                flux.write(self.creaPot(cur[1]))
+                stream.write(self.creaPot(cur[1]))
             elif act == 'ADV':
-                flux.write(self.addVarPot(cur[1],cur[2]))
+                stream.write(self.addVarPot(cur[1],cur[2]))
             elif act == 'ASE':
-                flux.write(self.addSoftEvPot(cur[1],cur[2],cur[3],cur[4]))
+                stream.write(self.addSoftEvPot(cur[1],cur[2],cur[3],cur[4]))
             elif act == 'MUC':
-                flux.write(self.mulPotCpt(cur[1],cur[2]))
+                stream.write(self.mulPotCpt(cur[1],cur[2]))
             elif act == 'MUL':
-                flux.write(self.mulPotPot(cur[1],cur[2]))
+                stream.write(self.mulPotPot(cur[1],cur[2]))
             elif act == 'MAR':
-                flux.write(self.margi(cur[1],cur[2]))
+                stream.write(self.margi(cur[1],cur[2]))
             elif act == 'NOR':
-                flux.write(self.norm(cur[1]))
-                flux.write("\tsortie.append("+str(cur[1])+")\n")
+                stream.write(self.norm(cur[1]))
+                stream.write("\tres.append("+str(cur[1])+")\n")
             elif act == 'FIL':
-                flux.write(self.fill(cur[1],cur[2]))
+                stream.write(self.fill(cur[1],cur[2]))
                 #if (cur[2] == 0):
                     #flux.write("\t"+str(cur[1])+"['])
-        flux.write("\treturn sortie")
+        stream.write("\treturn res")
 
-        flux.close()
+        stream.close()
         
 

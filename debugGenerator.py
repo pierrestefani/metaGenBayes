@@ -5,6 +5,7 @@ Created on Tue Mar 24 14:39:48 2015
 """
 # Code generation API
 from AbstractGenerator import AbstractGenerator
+import time
 
 class debugGenerator(AbstractGenerator):    
     def creaPot(self,nompot):
@@ -29,22 +30,24 @@ class debugGenerator(AbstractGenerator):
         return("\tFill"+str(num)+" de "+str(pot))
     
     def genere(self, comp, nomfichier, nomfonc):
-        flux = open(nomfichier,'w')
-        flux.write("def "+nomfonc+"():\n")
+        stream = open(nomfichier,'w')
+        stream.write("'''This code was generated to debug (it lists all the instructions to do on the tree to calculate the value of targets), compiled by Compiler.py and generated with debugGenerator.py.\nIt shouldn't be altered here'''\n")
+        stream.write("'''Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"'''\n\n")
+        stream.write("def "+nomfonc+"():\n")
         for cur in comp:
             act = cur[0]
             if act == 'CPO':
-                flux.write(self.creaPot(cur[1]))
+                stream.write(self.creaPot(cur[1]))
             elif act == 'ADV':
-                flux.write(self.addVarPot(cur[1],cur[2]))
+                stream.write(self.addVarPot(cur[1],cur[2]))
             elif act == 'MUC':
-                flux.write(self.mulPotCpt(cur[1],cur[2]))
+                stream.write(self.mulPotCpt(cur[1],cur[2]))
             elif act == 'MUL':
-                flux.write(self.mulPotPot(cur[1],cur[2]))
+                stream.write(self.mulPotPot(cur[1],cur[2]))
             elif act == 'MAR':
-                flux.write(self.margi(cur[1],cur[2]))
+                stream.write(self.margi(cur[1],cur[2]))
             elif act == 'NOR':
-                flux.write(self.norm(cur[1]))
+                stream.write(self.norm(cur[1]))
             elif act == 'FIL':
-                flux.write(self.fill(cur[1],cur[2]))
-        flux.close()
+                stream.write(self.fill(cur[1],cur[2]))
+        stream.close()

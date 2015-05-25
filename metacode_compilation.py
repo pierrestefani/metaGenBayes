@@ -68,8 +68,9 @@ def evsPotentials(bn, jt , evs):
                     compilator.addVariablePotential(str(i[0]), "EV_"+str(i[0]))
                     compilator.fillPotential("EV_"+str(i[0]),0)
                     cpt = 0
-                    for v in evs.get(i[1]):
-                        compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), str(v))
+                    for v in range(len(evs.get(i[1]))):
+                        value = "evs.get("+str(i)+"[1])["+str(v)+"]"
+                        compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), value)
                         cpt = cpt + 1
                     compilator.multiplicationPotentials(labelPotential(jt,j),"EV_"+str(i[0]))
     return res

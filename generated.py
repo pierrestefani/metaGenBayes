@@ -1,6 +1,7 @@
 '''This code was generated for pyAgrum use, compiled by Compiler.py and generated with pyAgrumGenerator.py.
 It shouldn't be altered here'''
 import pyAgrum as gum
+<<<<<<< HEAD
 from pyAgrum import Instantiation
 import numpy as np
 
@@ -55,17 +56,51 @@ def getValue(bn,evs):
 				Phi0_2_4_[{'v4' : i2,'v2' : i1,'v0' : i0}] = cpt_v4[i2]
 	EV_1=gum.Potential()
 	EV_1.add(v1)
+=======
+
+'''Generated on : 05/20/15 21:04'''
+
+def getValue(bn,evs):
+	res = list()
+	Phi1_2_3_=gum.Potential()
+	Phi1_2_3_.add(bn.variable(1))
+	Phi1_2_3_.add(bn.variable(2))
+	Phi1_2_3_.add(bn.variable(3))
+	Phi1_2_3_.fill(1)
+	Phi0_1_2_=gum.Potential()
+	Phi0_1_2_.add(bn.variable(0))
+	Phi0_1_2_.add(bn.variable(1))
+	Phi0_1_2_.add(bn.variable(2))
+	Phi0_1_2_.fill(1)
+	Phi0_2_4_=gum.Potential()
+	Phi0_2_4_.add(bn.variable(0))
+	Phi0_2_4_.add(bn.variable(2))
+	Phi0_2_4_.add(bn.variable(4))
+	Phi0_2_4_.fill(1)
+	Phi0_1_2_.multiplicateBy(bn.cpt(0))
+	Phi0_1_2_.multiplicateBy(bn.cpt(1))
+	Phi0_2_4_.multiplicateBy(bn.cpt(2))
+	Phi1_2_3_.multiplicateBy(bn.cpt(3))
+	Phi0_2_4_.multiplicateBy(bn.cpt(4))
+	EV_1=gum.Potential()
+	EV_1.add(bn.variable(1))
+>>>>>>> f554d86c6daeda2d2f9d4a6468ce726a7fd74e91
 	EV_1.fill(0)
 	EV_1[{'b':0}]=evs.get([1, 'b'][1])[0]
 	EV_1[{'b':1}]=evs.get([1, 'b'][1])[1]
 	Phi0_1_2_.multiplicateBy(EV_1)
 	EV_4=gum.Potential()
+<<<<<<< HEAD
 	EV_4.add(v4)
+=======
+	EV_4.add(bn.variable(4))
+>>>>>>> f554d86c6daeda2d2f9d4a6468ce726a7fd74e91
 	EV_4.fill(0)
 	EV_4[{'e':0}]=evs.get([4, 'e'][1])[0]
 	EV_4[{'e':1}]=evs.get([4, 'e'][1])[1]
 	Phi0_2_4_.multiplicateBy(EV_4)
 	Psi1_2_3_xx0_1_2_=gum.Potential()
+<<<<<<< HEAD
 	Psi1_2_3_xx0_1_2_.add(v1)
 	Psi1_2_3_xx0_1_2_.add(v2)
 	Psi1_2_3_xx0_1_2_.marginalize(Phi1_2_3_)
@@ -87,11 +122,38 @@ def getValue(bn,evs):
 	Phi1_2_3_.multiplicateBy(Psi0_1_2_xx1_2_3_dif)
 	P_0=gum.Potential()
 	P_0.add(v0)
+=======
+	Psi1_2_3_xx0_1_2_.add(bn.variable(1))
+	Psi1_2_3_xx0_1_2_.add(bn.variable(2))
+	Psi1_2_3_xx0_1_2_.marginalize(Phi1_2_3_)
+	Phi0_1_2_.multiplicateBy(Psi1_2_3_xx0_1_2_)
+	Psi0_2_4_xx0_1_2_=gum.Potential()
+	Psi0_2_4_xx0_1_2_.add(bn.variable(0))
+	Psi0_2_4_xx0_1_2_.add(bn.variable(2))
+	Psi0_2_4_xx0_1_2_.marginalize(Phi0_2_4_)
+	Phi0_1_2_.multiplicateBy(Psi0_2_4_xx0_1_2_)
+	Psi0_1_2_xx0_2_4_dif=gum.Potential()
+	Psi0_1_2_xx0_2_4_dif.add(bn.variable(0))
+	Psi0_1_2_xx0_2_4_dif.add(bn.variable(2))
+	Psi0_1_2_xx0_2_4_dif.marginalize(Phi0_1_2_)
+	Phi0_2_4_.multiplicateBy(Psi0_1_2_xx0_2_4_dif)
+	Psi0_1_2_xx1_2_3_dif=gum.Potential()
+	Psi0_1_2_xx1_2_3_dif.add(bn.variable(1))
+	Psi0_1_2_xx1_2_3_dif.add(bn.variable(2))
+	Psi0_1_2_xx1_2_3_dif.marginalize(Phi0_1_2_)
+	Phi1_2_3_.multiplicateBy(Psi0_1_2_xx1_2_3_dif)
+	P_0=gum.Potential()
+	P_0.add(bn.variable(0))
+>>>>>>> f554d86c6daeda2d2f9d4a6468ce726a7fd74e91
 	P_0.marginalize(Phi0_1_2_)
 	P_0.normalize()
 	res.append(P_0)
 	P_3=gum.Potential()
+<<<<<<< HEAD
 	P_3.add(v3)
+=======
+	P_3.add(bn.variable(3))
+>>>>>>> f554d86c6daeda2d2f9d4a6468ce726a7fd74e91
 	P_3.marginalize(Phi1_2_3_)
 	P_3.normalize()
 	res.append(P_3)

@@ -21,6 +21,7 @@ generator = debugGenerator()
 generator.genere(comp, "test.py", "getValue")
 """
 
+
 import metacode_compilation as compilator
 from pyAgrumGenerator import pyAgrumGenerator
 import pyAgrum as gum
@@ -49,10 +50,9 @@ for t in targets:
 print("** Génération pyAgrum **")
 comp = compilator.compil(bn, targets[:], evs)
 generator = pyAgrumGenerator()
-generator.genere(comp, "generated.py", "getValue(bn)")
-
+generator.genere(bn, targets, evs, comp, "generated.py", "getValue")
 from generated import getValue
-for i in getValue(bn):
+for i in getValue(bn,evs):
     print(i)
 
 
