@@ -14,7 +14,7 @@ target:
   - c
 
 # specification for generation code
-language: php
+language: php55
 filename: asia
 function: getProbaForAsia
 header: |
