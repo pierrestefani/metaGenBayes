@@ -6,15 +6,40 @@ Created on Wed Apr 22 21:10:26 2015
 """
 import time
 import numpy as np
-import pyAgrum
+import pyAgrum as gum
 
-class pyAgrumGenerator:                
-    def initCpts(self,bn):
+
+def varToCptLabel(bn, var):
+    dad = ""
+    for j in bn.parents(var):
+        dad+=str(j)
+    res = 'cpt'+str(var)+'sachant'+dad
+    return res
+
+class pyAgrumGenerator:
+
+    def copyVariables(self, bn):
         res = ""
         for i in bn.ids():
             res += "\tv"+str(i)+" = gum.LabelizedVariable('v"+str(i)+"','v"+str(i)+"',"+str(bn.variable(i).domainSize())+")\n"
-            res += "\tcpt_v"+str(i)+" = "+str(bn.cpt(i).tolist())+"\n"
+             
         return res
+        
+    def initCpts(self,bn):
+        res = ""
+        for i in bn.ids():
+            dad = ""
+            for j in bn.parents(i):
+                dad += str(j)
+            res += '\tcpt'+str(i)+'sachant'+dad+'=gum.Potential()\n'
+            res += '\tcpt'+str(i)+'sachant'+dad+'.add(v'+str(i)+')\n'
+            for j in bn.parents(i):
+                res += '\tcpt'+str(i)+'sachant'+dad+'.add(v'+str(j)+')\n'
+            tmpcpt = bn.cpt(i).tolist()
+            res += ('\tcpt'+str(i)+'sachant'+dad+"[:] = numpy.array("+str(tmpcpt)+")\n")
+        
+        return res
+        
     def creaPot(self,nompot):
         return ("\t"+str(nompot)+"=gum.Potential()\n")
     #A changer
@@ -30,19 +55,19 @@ class pyAgrumGenerator:
         res = ""
         indexPot = "}]"
         indexCpt = ""
-        value = bn.cpt(int(var))
-        
+        res += "\tinstPot = gum.Instantiation("+nompot+")\n\tn=0\n"
+        res += "\twhile (n<instPot.domainSize()):\n"
         for i in range(R):
-            res += "\tfor i"+str(i)+" in range("+nompot+".var_dims["+str(i)+"]):\n"
-            res += "\t"*(i+1)
-            indexPot = ",'v"+str(varPot[i])+"' : i"+str(i)+indexPot
-
+            indexPot = ",'v"+str(varPot[i])+"' : instPot.val("+str(i)+")"+indexPot
+        
         for i in bn.cpt(int(var)).var_names:
             id_var = bn.idFromName(i)
-            indexCpt = indexCpt+"[i"+str(varPot.index(id_var))+"]"
+            indexCpt = indexCpt+"[instPot.val("+str(varPot.index(id_var))+")]"
         
         indexPot = indexPot[1:]
-        res += "\t"*(R-2)+nompot+"[{"+indexPot+" = cpt_v"+str(var)+str(indexCpt)+"\n"
+        res += "\t\t"+nompot+"[{"+indexPot+" *= "+varToCptLabel(bn, int(var))+str(indexCpt)+"\n"
+        res += "\t\tinstPot.inc()\n"
+        res += "\t\tn=n+1\n"
         return res
              
     def mulPotPot(self,nompot1,nompot2):
@@ -60,10 +85,11 @@ class pyAgrumGenerator:
     def genere(self, bn, targets, evs, comp, nameFile, nameFunc):
         stream = open(nameFile,'w')
         stream.write("'''This code was generated for pyAgrum use, compiled by Compiler.py and generated with pyAgrumGenerator.py.\nIt shouldn't be altered here'''\n")
-        stream.write("import pyAgrum as gum\nfrom pyAgrum import Instantiation\nimport numpy as np\n\n")
+        stream.write("import pyAgrum as gum\nfrom pyAgrum import Instantiation\nimport numpy as numpy\n\n")
         stream.write("'''Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"'''\n\n")
         stream.write("def "+nameFunc+"(bn,evs):\n")
         stream.write("\tres = list()\n")
+        stream.write(self.copyVariables(bn))
         stream.write(self.initCpts(bn))
         for cur in comp:
             act = cur[0]
