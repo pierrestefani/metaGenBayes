@@ -90,6 +90,7 @@ def labelPotentialEvs(bn, evs):
 def evsPotentials(bn, jt , evs):
     '''Instructions to create, fill and initialize the potentials of soft evidences'''
     res = [] 
+    done = []
     ids = labelPotentialEvs(bn, evs)
     for i in ids:
         for j in jt.ids():
@@ -99,8 +100,7 @@ def evsPotentials(bn, jt , evs):
                     if(not(l in jt.clique(j))):
                         b = 0
                         break
-                if(b == 1):
-                    #index, enumerate... supprimés (résultats toujours corrects)
+                if((b == 1) and (i[0] not in done)):
                     compilator.createPotentialClique("EV_"+str(i[0]))
                     compilator.addVariablePotential(str(i[0]), "EV_"+str(i[0]))
                     compilator.fillPotential("EV_"+str(i[0]),0)
@@ -109,8 +109,10 @@ def evsPotentials(bn, jt , evs):
                         value = "evs.get("+str(i)+"[1])["+str(v)+"]"
                         compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), value)
                         cpt = cpt + 1
-                    compilator.multiplicationPotentials(labelPotential(jt,j),"EV_"+str(i[0]))
+                    done.append(i[0])
+                compilator.multiplicationPotentials(labelPotential(jt,j),"EV_"+str(i[0]))
     return res
+    
 
 def neighbors(jt,c):
     """List of all the direct neighbors of a clique c in a junction tree jt"""
