@@ -116,7 +116,7 @@ class numpyGenerator:
         stream.write("\nimport numpy as np\n")
         stream.write("'''Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"'''\n\n")
         stream.write("def "+nameFunc+"(evs):\n")
-        stream.write("\tres = list()\n")
+        stream.write("\tres = {}\n")
         stream.write(self.initCpts(bn))
         for cur in comp:
             act = cur[0]
@@ -134,7 +134,7 @@ class numpyGenerator:
                 stream.write(self.margi(cur[1],cur[2],cur[3],cur[4]))
             elif act == 'NOR':
                 stream.write(self.norm(cur[1]))
-                stream.write("\tres.append("+str(cur[1])+")\n")
+                stream.write("\tres['"+cur[2]+"']=["+str(cur[1])+"[:]]\n")
 #            elif act == 'FIL':
 #                stream.write(self.fill(cur[1],cur[2]))
                 #if (cur[2] == 0):
