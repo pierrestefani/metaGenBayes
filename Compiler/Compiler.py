@@ -36,8 +36,8 @@ class Compiler:
     def marginalisation(self, cliq1, seloncliq2,varPot1,varPot2):
         self.tab.append(["MAR", cliq1, seloncliq2,varPot1,varPot2])
        
-    def normalisation(self, cliq):
-        self.tab.append(["NOR", cliq])
+    def normalisation(self, cliq, targ):
+        self.tab.append(["NOR", cliq, targ])
         
     def getTab(self):
         return self.tab
@@ -233,7 +233,7 @@ def output(bn,jt,target):
             compilator.createPotentialClique("P_"+str(x),str(x))
             compilator.addVariablePotential(str(x), "P_"+str(x))
             compilator.marginalisation("P_"+str(x), labelPotential(jt,rac),[x],list(jt.clique(rac)))
-            compilator.normalisation("P_"+str(x))
+            compilator.normalisation("P_"+str(x), bn.variable(x).name())
             ls.remove(i)
             break
     #All the other targets
@@ -244,7 +244,7 @@ def output(bn,jt,target):
                 compilator.createPotentialClique("P_"+str(x),str(x))
                 compilator.addVariablePotential(str(x), "P_"+str(x))
                 compilator.marginalisation("P_"+str(x), labelPotential(jt,j),[x],list(jt.clique(j)))
-                compilator.normalisation("P_"+str(x))
+                compilator.normalisation("P_"+str(x), bn.variable(x).name())
                 break
                 
     
