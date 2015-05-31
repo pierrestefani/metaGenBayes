@@ -13,8 +13,8 @@ class Compiler:
         '''The compiler class will be an array of instructions '''        
         self.tab = []
         
-    def createPotentialClique(self,cliq):
-        self.tab.append(["CPO", cliq])
+    def createPotentialClique(self,cliq,varPot):
+        self.tab.append(["CPO", cliq, varPot])
         
     def addVariablePotential(self,var,cliq):
         self.tab.append(["ADV", var, cliq])      
@@ -29,12 +29,12 @@ class Compiler:
     def multiplicationCPT(self, cliq, cpt, varPot):
         self.tab.append(["MUC", cliq, cpt, varPot])
         
-    def multiplicationPotentials(self, cliq1, parcliq2):
-        self.tab.append(["MUL", cliq1, parcliq2])
+    def multiplicationPotentials(self, cliq1, parcliq2, varPot1, varPot2):
+        self.tab.append(["MUL", cliq1, parcliq2, varPot1, varPot2])
         
         
-    def marginalisation(self, cliq1, seloncliq2):
-        self.tab.append(["MAR", cliq1, seloncliq2])
+    def marginalisation(self, cliq1, seloncliq2,varPot1,varPot2):
+        self.tab.append(["MAR", cliq1, seloncliq2,varPot1,varPot2])
        
     def normalisation(self, cliq):
         self.tab.append(["NOR", cliq])
@@ -45,6 +45,17 @@ class Compiler:
 
 
 compilator = Compiler()
+
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Apr 21 23:50:21 2015
+
+@author: Marvin
+"""
+
+import pyAgrum as gum
+from Compiler import Compiler
+#import metacodeExtended as mce
 
 def labelPotential(jt,c):
     """Get the name of the potential for a clique c"""
@@ -57,7 +68,7 @@ def creationPotentials(jt):
     """Fill the compiler array of instructions in order to create the potentials and add the corresponding variables"""
     res = []
     for i in jt.ids():
-        compilator.createPotentialClique(labelPotential(jt,i))
+        compilator.createPotentialClique(labelPotential(jt,i),list(jt.clique(i)))
         for j in jt.clique(i):
             compilator.addVariablePotential(str(j), labelPotential(jt, i))
         compilator.fillPotential(labelPotential(jt,i),1)
@@ -90,7 +101,6 @@ def labelPotentialEvs(bn, evs):
 def evsPotentials(bn, jt , evs):
     '''Instructions to create, fill and initialize the potentials of soft evidences'''
     res = [] 
-    done = []
     ids = labelPotentialEvs(bn, evs)
     for i in ids:
         for j in jt.ids():
@@ -100,8 +110,9 @@ def evsPotentials(bn, jt , evs):
                     if(not(l in jt.clique(j))):
                         b = 0
                         break
-                if((b == 1) and (i[0] not in done)):
-                    compilator.createPotentialClique("EV_"+str(i[0]))
+                if(b == 1):
+                    #index, enumerate... supprimés (résultats toujours corrects)
+                    compilator.createPotentialClique("EV_"+str(i[0]),str(i[0]))
                     compilator.addVariablePotential(str(i[0]), "EV_"+str(i[0]))
                     compilator.fillPotential("EV_"+str(i[0]),0)
                     cpt = 0
@@ -109,10 +120,9 @@ def evsPotentials(bn, jt , evs):
                         value = "evs.get("+str(i)+"[1])["+str(v)+"]"
                         compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), value)
                         cpt = cpt + 1
-                    done.append(i[0])
-                compilator.multiplicationPotentials(labelPotential(jt,j),"EV_"+str(i[0]))
+                        
+                    compilator.multiplicationPotentials(labelPotential(jt,j),"EV_"+str(i[0]),list(jt.clique(j)),str(i[0]))
     return res
-    
 
 def neighbors(jt,c):
     """List of all the direct neighbors of a clique c in a junction tree jt"""
@@ -179,21 +189,23 @@ def AinterB(la,lb):
     
 def sendMessAbsor(bn, jt, ca, cb):
     """Updates the compiler array with inscrutions to send the message from ca to cb"""
-    np = labelSeparator(jt, ca, cb) 
-    compilator.createPotentialClique(np)
-    for i in AinterB(jt.clique(ca), jt.clique(cb)):
+    np = labelSeparator(jt, ca, cb)
+    varNp = AinterB(list(jt.clique(ca)),list(jt.clique(cb))) 
+    compilator.createPotentialClique(np,varNp)
+    for i in varNp:
         compilator.addVariablePotential(str(i), np)
-    compilator.marginalisation(np, labelPotential(jt,ca))
-    compilator.multiplicationPotentials(labelPotential(jt,cb), np)
+    compilator.marginalisation(np, labelPotential(jt,ca),list(varNp),list(jt.clique(ca)))
+    compilator.multiplicationPotentials(labelPotential(jt,cb), np,list(jt.clique(cb)),list(varNp))
 
 def sendMessDiffu(bn, jt, ca, cb):
     """Updates the compiler array with instructions for the diffusion"""
     np = labelSeparator(jt, ca, cb)+"dif"   #two different potential variables are used for absorption and diffusion in order to keep some of the results in certain nodes
-    compilator.createPotentialClique(np)
-    for i in AinterB(jt.clique(ca), jt.clique(cb)):
+    varNp = AinterB(list(jt.clique(ca)),list(jt.clique(cb)))    
+    compilator.createPotentialClique(np,varNp)
+    for i in varNp:
         compilator.addVariablePotential(str(i), np)
-    compilator.marginalisation(np, labelPotential(jt,ca))
-    compilator.multiplicationPotentials(labelPotential(jt,cb), np)
+    compilator.marginalisation(np, labelPotential(jt,ca),list(varNp),list(jt.clique(ca)))
+    compilator.multiplicationPotentials(labelPotential(jt,cb), np,list(jt.clique(cb)),list(varNp))
 
 def inference(bn, jt, target): 
     """Considering the targets of a bn, inference does the absorption and the diffusion of the information"""
@@ -218,9 +230,9 @@ def output(bn,jt,target):
     for i in target:
         x = bn.idFromName(i)
         if(x in jt.clique(rac)):
-            compilator.createPotentialClique("P_"+str(x))
+            compilator.createPotentialClique("P_"+str(x),str(x))
             compilator.addVariablePotential(str(x), "P_"+str(x))
-            compilator.marginalisation("P_"+str(x), labelPotential(jt,rac))
+            compilator.marginalisation("P_"+str(x), labelPotential(jt,rac),[x],list(jt.clique(rac)))
             compilator.normalisation("P_"+str(x))
             ls.remove(i)
             break
@@ -229,12 +241,14 @@ def output(bn,jt,target):
         for j in jt.ids():
             x = bn.idFromName(i)
             if(x in jt.clique(j)):
-                compilator.createPotentialClique("P_"+str(x))
+                compilator.createPotentialClique("P_"+str(x),str(x))
                 compilator.addVariablePotential(str(x), "P_"+str(x))
-                compilator.marginalisation("P_"+str(x), labelPotential(jt,j))
+                compilator.marginalisation("P_"+str(x), labelPotential(jt,j),[x],list(jt.clique(j)))
                 compilator.normalisation("P_"+str(x))
                 break
                 
+    
+compilator=Compiler()
     
 def compil(bn,target,evs):
     """This function uses all the predefined functions above to fill the compiler array with instructions to get the targets of a bn according to evidences"""

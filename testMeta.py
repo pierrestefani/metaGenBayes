@@ -24,6 +24,7 @@ generator.genere(comp, "test.py", "getValue")
 
 from Compiler import Compiler
 from Generator.pyAgrumGenerator import pyAgrumGenerator
+from Generator.numpyGenerator import numpyGenerator
 import pyAgrum as gum
 #import os
 #os.chdir("C:/Users/Marvin/Desktop/Informatique/Projet PIMA/testMetaBaysGen/Recent2")
@@ -53,8 +54,13 @@ generator = pyAgrumGenerator()
 generator.genere(bn, targets, evs, comp, "generated.py", "getValue")
 from generated import getValue
 print(getValue(evs))
-#for i in getValue(bn,evs):
-#    print(i)
+
+    
+print("**Génération Python (numpy)**")
+generator = numpyGenerator()
+generator.genere(bn,targets,evs,comp,"generatedNumpy.py","getValue")
+from generatedNumpy import getValue
+print(getValue(evs))
 
 print("** Génération PHP **")
 print("to be done")

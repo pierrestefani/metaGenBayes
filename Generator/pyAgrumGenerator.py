@@ -5,8 +5,6 @@ Created on Wed Apr 22 21:10:26 2015
 @author: Marvin
 """
 import time
-import numpy as np
-import pyAgrum
 
 class pyAgrumGenerator:                
     def initCpts(self,bn):
@@ -16,14 +14,14 @@ class pyAgrumGenerator:
         for i in bn.ids():
             parents = ""
             for j in bn.parents(i):
-                parents += str(j)
-            res += "\t"+str(i)+"sachant"+parents+"= gum.Potential()\n"
-            res += "\t"+str(i)+"sachant"+parents+".add(v"+str(i)+")\n"            
+                parents += str(bn.variable(j).name())
+            res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper() +"= gum.Potential()\n"
+            res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper()+".add(v"+str(i)+")\n"            
             for j in bn.parents(i):
-                res += "\t"+str(i)+"sachant"+parents+".add(v"+str(j)+")\n"
-            res += "\t"+str(i)+"sachant"+parents+"[:] = np.array("+str(bn.cpt(i).tolist())+")\n"
+                res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper()+".add(v"+str(j)+")\n"
+            res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper()+"[:] = np.array("+str(bn.cpt(i).tolist())+")\n"
         return res
-    def creaPot(self,nompot):
+    def creaPot(self,nompot,varPot):
         return ("\t"+str(nompot)+"=gum.Potential()\n")
         
     def addVarPot(self,var,nompot):
@@ -37,9 +35,9 @@ class pyAgrumGenerator:
         res = ""
         indexPot = "}]"
         indexCpt = ""
-        cpt = str((int(var)))+"sachant"
+        cpt = str(bn.variable(int(var)).name()).upper()+"sachant"
         for i in bn.parents(int(var)):
-            cpt += str(i)
+            cpt += str(bn.variable(i).name()).upper()
         
         for i in range(R):
             res += "\tfor i"+str(i)+" in range("+nompot+".var_dims["+str(i)+"]):\n"
@@ -54,10 +52,10 @@ class pyAgrumGenerator:
         res += "\t"*(R-2)+nompot+"[{"+indexPot+" *= "+str(cpt)+"[:]"+str(indexCpt)+"\n"
         return res
              
-    def mulPotPot(self,nompot1,nompot2):
+    def mulPotPot(self,nompot1,nompot2,varPot1,varPot2):
         return("\t"+str(nompot1)+".multiplicateBy("+str(nompot2)+")\n")
         
-    def margi(self,nompot1,nompot2):
+    def margi(self,nompot1,nompot2,varPot1,varPot2):    
         return("\t"+str(nompot1)+".marginalize("+str(nompot2)+")\n")
         
     def norm(self, nompot):
@@ -77,7 +75,7 @@ class pyAgrumGenerator:
         for cur in comp:
             act = cur[0]
             if act == 'CPO':
-                stream.write(self.creaPot(cur[1]))
+                stream.write(self.creaPot(cur[1],cur[2]))
             elif act == 'ADV':
                 stream.write(self.addVarPot('v'+cur[1],cur[2]))
             elif act == 'ASE':
@@ -85,16 +83,14 @@ class pyAgrumGenerator:
             elif act == 'MUC':
                 stream.write(self.mulPotCpt(bn,cur[1],cur[2],cur[3]))
             elif act == 'MUL':
-                stream.write(self.mulPotPot(cur[1],cur[2]))
+                stream.write(self.mulPotPot(cur[1],cur[2],cur[3],cur[4]))
             elif act == 'MAR':
-                stream.write(self.margi(cur[1],cur[2]))
+                stream.write(self.margi(cur[1],cur[2],cur[3],cur[4]))
             elif act == 'NOR':
                 stream.write(self.norm(cur[1]))
                 stream.write("\tres.append("+str(cur[1])+"[:])\n")
             elif act == 'FIL':
                 stream.write(self.fill(cur[1],cur[2]))
-                #if (cur[2] == 0):
-                    #flux.write("\t"+str(cur[1])+"['])
         stream.write("\treturn res")
 
         stream.close()
