@@ -1,7 +1,7 @@
 # configuration file for metaGeneBayes (file.yaml)
 
 # specification for inference
-bayesnet: asia.bif
+bayesnet: BNs/asia.bif
 
 evidence:
   - smoking?: [1,0]
@@ -10,8 +10,8 @@ target:
   - bronchitis?
 
 # specification for generation code
-language: pyAgrum
-filename: asia
+language:  numpy
+filename: test/asia
 function: getProbaForAsia
 header: |
   ################################################################################

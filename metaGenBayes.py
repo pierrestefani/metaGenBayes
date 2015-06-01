@@ -11,7 +11,7 @@ Created on Sat May 30 10:38:51 2015
 
 @author: pierre
 
-YAML Config format : 
+YAML Config format :
 'language' : 'pyAgrum',
     'function' : 'getProbaForAsia',
     'filename':'asia',
@@ -24,11 +24,18 @@ import pyAgrum as gum
 import yaml
 from Compiler import Compiler
 import config as cg
+import sys
 
 languages = ["Debug", "pyAgrum", "numPy", "PHP"]
 
-request = cg.loadConfig('testAsia.yaml')
-bnpath = "BNs/"+request['bayesnet'] 
+if (len(sys.argv)<2):
+  print("metaGenBayes.py configfile.yaml")
+  sys.exit(0)
+
+print("loading configuration in "+sys.argv[1])
+
+request = cg.loadConfig(sys.argv[1])
+bnpath = request['bayesnet']
 arrayOfInstructions = Compiler.compil(gum.loadBN(bnpath), request['target'][:], request['evidence'][0])
 
 
@@ -37,8 +44,8 @@ if(request['language'].lower() == languages[1].lower()):
     generator = pyAgrumGenerator()
     generator.genere(gum.loadBN(bnpath), request['target'][:], request['evidence'][0], arrayOfInstructions, request['filename']+'.py', request['function'])
     print("Génération en pyAgrum effectuée, fichier "+request['filename']+'.py crée')
-    
-    
+
+
 elif(request['language'].lower() == languages[2].lower()):
     print("generation en numPy tbd")
 
