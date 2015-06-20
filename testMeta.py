@@ -25,6 +25,7 @@ generator.genere(comp, "test.py", "getValue")
 from Compiler import Compiler
 from Generator.pyAgrumGenerator import pyAgrumGenerator
 from Generator.numpyGenerator import numpyGenerator
+from Generator.phpGenerator import phpGenerator
 import pyAgrum as gum
 #import os
 #os.chdir("C:/Users/Marvin/Desktop/Informatique/Projet PIMA/testMetaBaysGen/Recent2")
@@ -63,4 +64,11 @@ from generatedNumpy import getValue
 print(getValue(evs))
 
 print("** Génération PHP **")
-print("to be done")
+generator = phpGenerator()
+generator.genere(bn,targets,evs,comp,"generatedPHP.php","getValue")
+import subprocess
+proc = subprocess.Popen("C:/Users/Marvin/Desktop/Informatique/Projet PIMA/generatedPHP.php", shell = True, stdout = subprocess.PIPE)
+script_response = proc.stdout.read()
+print(script_response)
+
+'''Je n'arrive pas à récupérer le résultat de generatedPHP avec Python'''
