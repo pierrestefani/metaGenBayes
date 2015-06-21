@@ -8,12 +8,18 @@ Created on Mon Apr 13 20:26:43 2015
 '''Abstract class for the generators'''
 
 class AbstractGenerator:
+    def initCpts(self,bn):
+        raise(NotImplemented)
+    
     def creaPot(self,jt,c):
         raise(NotImplemented)
     
     def addVarPot(self,jt,c):
         raise(NotImplemented)
         
+    def addSoftEvPot(self,evid,nompot,index,value):
+        raise(NotImplemented)
+    
     def mulPotCpt(self,sep2,cliq,sep):
         raise(NotImplemented)
     

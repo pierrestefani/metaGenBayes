@@ -6,20 +6,32 @@ Created on Wed Apr 22 21:10:26 2015
 """
 import time
 
-class pyAgrumGenerator:                
+class pyAgrumGenerator:   
+    @classmethod
+    def nameCpt(self, bn, var):
+        parents = ""
+        for i in bn.parents(var):
+            parents += str(i)
+        parents = "_".join(parents)
+        return "P"+str(var)+"sachant"+parents
+             
     def initCpts(self,bn):
         res = ""
         for i in bn.ids():
             res += "\tv"+str(i)+" = gum.LabelizedVariable('"+bn.variable(i).name()+"','"+bn.variable(i).name()+"',"+str(bn.variable(i).domainSize())+")\n"
         for i in bn.ids():
-            parents = ""
+#            parents = ""
+#            for j in bn.parents(i):
+#                parents += str(bn.variable(j).name())
+            nameCpt = pyAgrumGenerator.nameCpt(bn,i)
+#            res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper() +"= gum.Potential()\n"
+#            res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper()+".add(v"+str(i)+")\n"
+            res += "\t"+nameCpt+"= gum.Potential()\n"
+            res += "\t"+nameCpt+".add(v"+str(i)+")\n"
             for j in bn.parents(i):
-                parents += str(bn.variable(j).name())
-            res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper() +"= gum.Potential()\n"
-            res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper()+".add(v"+str(i)+")\n"            
-            for j in bn.parents(i):
-                res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper()+".add(v"+str(j)+")\n"
-            res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper()+"[:] = np.array("+str(bn.cpt(i).tolist())+")\n"
+#                res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper()+".add(v"+str(j)+")\n"
+                res += "\t"+nameCpt+".add(v"+str(j)+")\n"
+            res += "\t"+nameCpt+"[:] = np.array("+str(bn.cpt(i).tolist())+")\n"
         return res
     def creaPot(self,nompot,varPot):
         return ("\t"+str(nompot)+"=gum.Potential()\n")
@@ -28,16 +40,14 @@ class pyAgrumGenerator:
         return("\t"+str(nompot)+".add("+str(var)+")\n")
         
     def addSoftEvPot(self,evid,nompot,index,value):
-        return("\t"+str(nompot)+"[{'"+str(evid)+"':"+index+"}]="+value+"\n")
+        return("\t"+str(nompot)+"[:]="+value+"\n")
         
     def mulPotCpt(self, bn, nompot, var, varPot):
         R = len(varPot)
         res = ""
         indexPot = "}]"
         indexCpt = ""
-        cpt = str(bn.variable(int(var)).name()).upper()+"sachant"
-        for i in bn.parents(int(var)):
-            cpt += str(bn.variable(i).name()).upper()
+        cpt = pyAgrumGenerator.nameCpt(bn,int(var))
         
         for i in range(R):
             res += "\tfor i"+str(i)+" in range("+nompot+".var_dims["+str(i)+"]):\n"
@@ -50,12 +60,13 @@ class pyAgrumGenerator:
         
         indexPot = indexPot[1:]
         res += "\t"*(R-2)+nompot+"[{"+indexPot+" *= "+str(cpt)+"[:]"+str(indexCpt)+"\n"
+#        res = "\t"+nompot+".multiplicateBy("+cpt+")\n"
         return res
              
     def mulPotPot(self,nompot1,nompot2,varPot1,varPot2):
         return("\t"+str(nompot1)+".multiplicateBy("+str(nompot2)+")\n")
         
-    def margi(self,nompot1,nompot2,varPot1,varPot2):    
+    def margi(self,bn,nompot1,nompot2,varPot1,varPot2):    
         return("\t"+str(nompot1)+".marginalize("+str(nompot2)+")\n")
         
     def norm(self, nompot):
@@ -85,7 +96,7 @@ class pyAgrumGenerator:
             elif act == 'MUL':
                 stream.write(self.mulPotPot(cur[1],cur[2],cur[3],cur[4]))
             elif act == 'MAR':
-                stream.write(self.margi(cur[1],cur[2],cur[3],cur[4]))
+                stream.write(self.margi(cur[1],cur[2],cur[3],cur[4],cur[5]))
             elif act == 'NOR':
                 stream.write(self.norm(cur[1]))
                 stream.write("\tres['"+cur[2]+"']=["+str(cur[1])+"[:]]\n")
