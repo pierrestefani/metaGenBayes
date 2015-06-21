@@ -27,6 +27,7 @@ from Generator.pyAgrumGenerator import pyAgrumGenerator
 from Generator.numpyGenerator import numpyGenerator
 from Generator.phpGenerator import phpGenerator
 from Generator.javascriptGenerator import javascriptGenerator
+
 import pyAgrum as gum
 #import os
 #os.chdir("C:/Users/Marvin/Desktop/Informatique/Projet PIMA/testMetaBaysGen/Recent2")
@@ -78,6 +79,4 @@ print(script_response)
 print("** Génération JavaScript **")
 generator = javascriptGenerator()
 generator.genere(bn, targets, evs, comp, "generatedJavascript.js", "getValue")
-
-
 
