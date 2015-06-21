@@ -33,8 +33,8 @@ class Compiler:
         self.tab.append(["MUL", cliq1, parcliq2, varPot1, varPot2])
         
         
-    def marginalisation(self, cliq1, seloncliq2,varPot1,varPot2):
-        self.tab.append(["MAR", cliq1, seloncliq2,varPot1,varPot2])
+    def marginalisation(self, bn, cliq1, seloncliq2,varPot1,varPot2):
+        self.tab.append(["MAR", bn, cliq1, seloncliq2,varPot1,varPot2])
        
     def normalisation(self, cliq, targ):
         self.tab.append(["NOR", cliq, targ])
@@ -53,9 +53,7 @@ Created on Tue Apr 21 23:50:21 2015
 @author: Marvin
 """
 
-import pyAgrum as gum
 from Compiler import Compiler
-#import metacodeExtended as mce
 
 def labelPotential(jt,c):
     """Get the name of the potential for a clique c"""
@@ -114,13 +112,8 @@ def evsPotentials(bn, jt , evs):
                     #index, enumerate... supprimés (résultats toujours corrects)
                     compilator.createPotentialClique("EV_"+str(i[0]),str(i[0]))
                     compilator.addVariablePotential(str(i[0]), "EV_"+str(i[0]))
-                    compilator.fillPotential("EV_"+str(i[0]),0)
                     cpt = 0
-                    for v in range(len(evs.get(i[1]))):
-                        value = "evs.get("+str(i)+"[1])["+str(v)+"]"
-                        compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), value)
-                        cpt = cpt + 1
-                        
+                    compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), "evs.get("+str(i)+"[1])")
                     compilator.multiplicationPotentials(labelPotential(jt,j),"EV_"+str(i[0]),list(jt.clique(j)),str(i[0]))
     return res
 
@@ -194,7 +187,7 @@ def sendMessAbsor(bn, jt, ca, cb):
     compilator.createPotentialClique(np,varNp)
     for i in varNp:
         compilator.addVariablePotential(str(i), np)
-    compilator.marginalisation(np, labelPotential(jt,ca),list(varNp),list(jt.clique(ca)))
+    compilator.marginalisation(bn,np, labelPotential(jt,ca),list(varNp),list(jt.clique(ca)))
     compilator.multiplicationPotentials(labelPotential(jt,cb), np,list(jt.clique(cb)),list(varNp))
 
 def sendMessDiffu(bn, jt, ca, cb):
@@ -204,7 +197,7 @@ def sendMessDiffu(bn, jt, ca, cb):
     compilator.createPotentialClique(np,varNp)
     for i in varNp:
         compilator.addVariablePotential(str(i), np)
-    compilator.marginalisation(np, labelPotential(jt,ca),list(varNp),list(jt.clique(ca)))
+    compilator.marginalisation(bn,np, labelPotential(jt,ca),list(varNp),list(jt.clique(ca)))
     compilator.multiplicationPotentials(labelPotential(jt,cb), np,list(jt.clique(cb)),list(varNp))
 
 def inference(bn, jt, target): 
@@ -232,7 +225,7 @@ def output(bn,jt,target):
         if(x in jt.clique(rac)):
             compilator.createPotentialClique("P_"+str(x),str(x))
             compilator.addVariablePotential(str(x), "P_"+str(x))
-            compilator.marginalisation("P_"+str(x), labelPotential(jt,rac),[x],list(jt.clique(rac)))
+            compilator.marginalisation(bn,"P_"+str(x), labelPotential(jt,rac),[x],list(jt.clique(rac)))
             compilator.normalisation("P_"+str(x), bn.variable(x).name())
             ls.remove(i)
             break
@@ -243,7 +236,7 @@ def output(bn,jt,target):
             if(x in jt.clique(j)):
                 compilator.createPotentialClique("P_"+str(x),str(x))
                 compilator.addVariablePotential(str(x), "P_"+str(x))
-                compilator.marginalisation("P_"+str(x), labelPotential(jt,j),[x],list(jt.clique(j)))
+                compilator.marginalisation(bn,"P_"+str(x), labelPotential(jt,j),[x],list(jt.clique(j)))
                 compilator.normalisation("P_"+str(x), bn.variable(x).name())
                 break
                 
