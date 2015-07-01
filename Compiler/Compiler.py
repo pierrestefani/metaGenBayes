@@ -38,11 +38,12 @@ class Compiler:
        
     def normalisation(self, cliq, targ):
         self.tab.append(["NOR", cliq, targ])
+    
+    def equa(self, cliq1, cliq2):
+        self.tab.append(["EQU", cliq1, cliq2])
         
     def getTab(self):
         return self.tab
-    
-
 
 compilator = Compiler()
 
@@ -67,9 +68,12 @@ def creationPotentials(jt):
     res = []
     for i in jt.ids():
         compilator.createPotentialClique(labelPotential(jt,i),list(jt.clique(i)))
+        compilator.createPotentialClique(labelPotential(jt,i)+"dif",list(jt.clique(i)))
         for j in jt.clique(i):
             compilator.addVariablePotential(str(j), labelPotential(jt, i))
+            compilator.addVariablePotential(str(j), labelPotential(jt, i)+"dif")
         compilator.fillPotential(labelPotential(jt,i),1)
+        compilator.fillPotential(labelPotential(jt,i)+"dif",1)
     return res
 
 def initPotentials(bn,jt):
@@ -114,7 +118,7 @@ def evsPotentials(bn, jt , evs):
                     compilator.addVariablePotential(str(i[0]), "EV_"+str(i[0]))
                     cpt = 0
                     compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), "evs.get("+str(i)+"[1])")
-                    compilator.multiplicationPotentials(labelPotential(jt,j),"EV_"+str(i[0]),list(jt.clique(j)),str(i[0]))
+                    compilator.multiplicationPotentials(labelPotential(jt,j),"EV_"+str(i[0]),list(jt.clique(j)),[str(i[0])])
     return res
 
 def neighbors(jt,c):
@@ -197,12 +201,12 @@ def sendMessDiffu(bn, jt, ca, cb):
     compilator.createPotentialClique(np,varNp)
     for i in varNp:
         compilator.addVariablePotential(str(i), np)
-    compilator.marginalisation(bn,np, labelPotential(jt,ca),list(varNp),list(jt.clique(ca)))
-    compilator.multiplicationPotentials(labelPotential(jt,cb), np,list(jt.clique(cb)),list(varNp))
+    compilator.marginalisation(bn,np, labelPotential(jt,ca)+"dif",list(varNp),list(jt.clique(ca)))
+    compilator.multiplicationPotentials(labelPotential(jt,cb)+"dif", np,list(jt.clique(cb)),list(varNp))
 
 def inference(bn, jt, target): 
     """Considering the targets of a bn, inference does the absorption and the diffusion of the information"""
-    r = mainClique(bn, jt, target)
+    r = mainClique(bn, jt, target) 
     n = r
     absorp = []
     diffu = []
@@ -211,6 +215,8 @@ def inference(bn, jt, target):
         sendMessAbsor(bn, jt, i[0], i[1])
     
     if(diffu):
+        rac = labelPotential(jt,r)
+        compilator.equa(rac+"dif",rac)
         for i in diffu:
             sendMessDiffu(bn, jt, i[0], i[1])
 
@@ -223,7 +229,7 @@ def output(bn,jt,target):
     for i in target:
         x = bn.idFromName(i)
         if(x in jt.clique(rac)):
-            compilator.createPotentialClique("P_"+str(x),str(x))
+            compilator.createPotentialClique("P_"+str(x),[str(x)])
             compilator.addVariablePotential(str(x), "P_"+str(x))
             compilator.marginalisation(bn,"P_"+str(x), labelPotential(jt,rac),[x],list(jt.clique(rac)))
             compilator.normalisation("P_"+str(x), bn.variable(x).name())
@@ -234,9 +240,9 @@ def output(bn,jt,target):
         for j in jt.ids():
             x = bn.idFromName(i)
             if(x in jt.clique(j)):
-                compilator.createPotentialClique("P_"+str(x),str(x))
+                compilator.createPotentialClique("P_"+str(x),[str(x)])
                 compilator.addVariablePotential(str(x), "P_"+str(x))
-                compilator.marginalisation(bn,"P_"+str(x), labelPotential(jt,j),[x],list(jt.clique(j)))
+                compilator.marginalisation(bn,"P_"+str(x), labelPotential(jt,j)+"dif",[x],list(jt.clique(j)))
                 compilator.normalisation("P_"+str(x), bn.variable(x).name())
                 break
                 
