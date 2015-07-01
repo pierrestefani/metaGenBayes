@@ -32,17 +32,29 @@ import pyAgrum as gum
 #import os
 #os.chdir("C:/Users/Marvin/Desktop/Informatique/Projet PIMA/testMetaBaysGen/Recent2")
 
-bn=gum.BayesNet()
-a,b,c,d,e=[bn.add(gum.LabelizedVariable(s,s,2)) for s in 'abcde']
-bn.addArc(a,b)
-bn.addArc(a,c)
-bn.addArc(b,d)
-bn.addArc(c,d)
-bn.addArc(e,c)
-bn.generateCPTs()
+#Choose the right bn
+#bn=gum.BayesNet()
+#a,b,c,d,e=[bn.add(gum.LabelizedVariable(s,s,2)) for s in 'abcde']
+#bn.addArc(a,b)
+#bn.addArc(a,c)
+#bn.addArc(b,d)
+#bn.addArc(c,d)
+#bn.addArc(e,c)
+#bn.generateCPTs()
 
-targets = ["d","a"]
-evs = {"e":[1,0], "b":[0.25,0.75]}
+bn = gum.loadBN("C:/Users/Marvin/Desktop/Informatique/ProjetPIMA/metaGenBayesCorrection/BNs/alarm.bif")
+
+#Choose the rights targets
+#targets = ["d","a"] #Our own bn
+#targets = ["bronchitis?","positive_XraY?"] #asia
+targets = ["HYPOVOLEMIA","CATECHOL"] #alarm
+#targets = ["Boundaries","SynForcng"] #hailfinder
+
+#Choose the rigts evs
+#evs = {"e":[1,0], "b":[0.25,0.75]} #Our own bn
+#evs = {"smoking?":[0.5,0.5]} #asia
+evs = {"ANAPHYLAXIS":[0.4,0.6]} #alarm
+#evs = {"AMInstabMt":[0,1,0]} #hailfinder
 
 print("** Version aGrUM **")
 ie=gum.LazyPropagation(bn)
@@ -69,14 +81,7 @@ print("** Génération PHP **")
 generator = phpGenerator()
 generator.genere(bn,targets,evs,comp,"generatedPHP.php","getValue")
 import subprocess
-proc = subprocess.Popen("C:/Users/Marvin/Desktop/Informatique/Projet PIMA/generatedPHP.php", shell = True, stdout = subprocess.PIPE)
+proc = subprocess.Popen("php C:/Users/Marvin/Desktop/Informatique/ProjetPIMA/metaGenBayesCorrection/generatedPHP.php", shell = True, stdout = subprocess.PIPE)
 script_response = proc.stdout.read()
 print(script_response)
-
-'''Je n'arrive pas à récupérer le résultat de generatedPHP avec Python'''
-
-
-print("** Génération JavaScript **")
-generator = javascriptGenerator()
-generator.genere(bn, targets, evs, comp, "generatedJavascript.js", "getValue")
 

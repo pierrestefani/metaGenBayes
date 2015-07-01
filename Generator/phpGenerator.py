@@ -10,11 +10,11 @@ import time
 class phpGenerator:
     @classmethod
     def nameCpt(self, bn, var):
-        parents = ""
+        parents = []
         for i in bn.parents(var):
-            parents += str(i)
+            parents.append(str(i))
         parents = "_".join(parents)
-        return "P"+str(var)+"given"+parents
+        return "P"+str(var)+"sachant"+parents
         
     def initCpts(self,bn):
         res = ""
@@ -27,14 +27,12 @@ class phpGenerator:
         #Create potential evidence (made by addSoftEvPot)
         if (nomPot[0:2] == "EV"):
             return ""
-        #Create potential            
-        if (nomPot[0:3] == "Phi"):
-            for i in varPot:
-                dim += "array_fill(0,"+str(bn.variable(int(i)).domainSize())+","
-            return "\t$"+nomPot+"="+dim+"1.0"+")"*len(varPot)+";\n"
-        
+        #Create potential
         for i in varPot:
-            dim += "array_fill(0,"+str(bn.variable(int(i)).domainSize())+","
+                dim = "array_fill(0,"+str(bn.variable(int(i)).domainSize())+","+dim
+        if (nomPot[0:3] == "Phi"):
+            return "\t$"+nomPot+"="+dim+"1.0"+")"*len(varPot)+";\n"
+    
         return "\t$"+nomPot+"="+dim+"0.0"+")"*len(varPot)+";\n"
         
     def addSoftEvPot(self,evid,nompot,index,value):
@@ -56,7 +54,8 @@ class phpGenerator:
             id_var = bn.idFromName(i)
             indexCpt += "[$i"+str(varPot.index(id_var))+"]"
         
-        res += "\t"*(R-2)+"$"+nompot+indexPot+" *= $"+str(cpt)+str(indexCpt)+";\n"
+        res += "\t{"+"$"+nompot+indexPot+" *= $"+str(cpt)+str(indexCpt)+";\n"
+        res += ("\t"*(R+1))+"$"+nompot+"dif"+indexPot+" *= $"+str(cpt)+str(indexCpt)+";}\n"
         return res
              
     def mulPotPot(self,bn,nompot1,nompot2,varPot1,varPot2):
@@ -72,7 +71,7 @@ class phpGenerator:
         for i in varPot2:
             indexPot2 = "[$i"+str(varPot1.index(int(i)))+"]"+indexPot2
             
-        res += "\t"*(R-2)+"$"+nompot1+indexPot1+" *= $"+nompot2+indexPot2+";\n"
+        res += "\t"+"$"+nompot1+indexPot1+" *= $"+nompot2+indexPot2+";\n"
         return res
         
     def margi(self, bn, nompot1,nompot2,varPot1,varPot2):
@@ -90,7 +89,7 @@ class phpGenerator:
             indexPot2[R2-1-varPot2.index(int(varPot1[i]))] = "[$i"+str(i)+"]"
             
         for j in range(R3):
-            res += "\tfor($j"+str(j)+"=0;$j"+str(j)+"<"+str(bn.variable(varPot2[j]).domainSize())+";$j"+str(j)+"++)\n"
+            res += "\tfor($j"+str(j)+"=0;$j"+str(j)+"<"+str(bn.variable(varPot3[j]).domainSize())+";$j"+str(j)+"++)\n"
             res += "\t"*(j+i+2)
             indexPot2[R2-1-varPot2.index(int(varPot3[j]))] = "[$j"+str(j)+"]"
         indexPot2 = "".join(indexPot2)
@@ -104,7 +103,9 @@ class phpGenerator:
         res += "\tfor($i0=0;$i0<count($"+nompot+");$i0++)\n"
         res += "\t\t$"+nompot+"[$i0]/=$sum;\n"
         return res
-    
+    def equa(self, nompot1, nompot2):
+        return "\t$"+nompot1+" = $"+nompot2+";\n"
+        
     def genere(self, bn, targets, evs, comp, nameFile, nameFunc):
         stream = open(nameFile,'w')
         stream.write("<?php\n")
@@ -129,6 +130,8 @@ class phpGenerator:
             elif act == 'NOR':
                 stream.write(self.norm(cur[1]))
                 stream.write("\t$res['"+cur[2]+"']=$"+str(cur[1])+";\n")
+            elif act == 'EQU':
+                stream.write(self.equa(cur[1],cur[2]))
         stream.write("\treturn $res;\n}\n")
         evsphp = []
         for i in evs:
@@ -136,5 +139,4 @@ class phpGenerator:
             evsphp.append(ev)
         
         stream.write("print_r(getValue(array(\n"+",\n".join(evsphp)+"\n)));\n")
-        stream.write("?>")
         stream.close()

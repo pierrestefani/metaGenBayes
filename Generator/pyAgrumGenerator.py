@@ -9,9 +9,9 @@ import time
 class pyAgrumGenerator:   
     @classmethod
     def nameCpt(self, bn, var):
-        parents = ""
+        parents = []
         for i in bn.parents(var):
-            parents += str(i)
+            parents.append(str(i))
         parents = "_".join(parents)
         return "P"+str(var)+"sachant"+parents
              
@@ -20,19 +20,18 @@ class pyAgrumGenerator:
         for i in bn.ids():
             res += "\tv"+str(i)+" = gum.LabelizedVariable('"+bn.variable(i).name()+"','"+bn.variable(i).name()+"',"+str(bn.variable(i).domainSize())+")\n"
         for i in bn.ids():
-#            parents = ""
-#            for j in bn.parents(i):
-#                parents += str(bn.variable(j).name())
+
             nameCpt = pyAgrumGenerator.nameCpt(bn,i)
-#            res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper() +"= gum.Potential()\n"
-#            res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper()+".add(v"+str(i)+")\n"
-            res += "\t"+nameCpt+"= gum.Potential()\n"
+            res += "\t"+nameCpt+" = gum.Potential()\n"
             res += "\t"+nameCpt+".add(v"+str(i)+")\n"
-            for j in bn.parents(i):
-#                res += "\t"+str(bn.variable(i).name()).upper()+"sachant"+parents.upper()+".add(v"+str(j)+")\n"
-                res += "\t"+nameCpt+".add(v"+str(j)+")\n"
+#            for j in bn.parents(i):
+#                res += "\t"+nameCpt+".add(v"+str(j)+")\n"
+            ls = bn.cpt(i).var_names
+            for j in reversed(ls[0:len(ls)-1]):
+                res += "\t"+nameCpt+".add(v"+str(bn.idFromName(j))+")\n"
             res += "\t"+nameCpt+"[:] = np.array("+str(bn.cpt(i).tolist())+")\n"
         return res
+        
     def creaPot(self,nompot,varPot):
         return ("\t"+str(nompot)+"=gum.Potential()\n")
         
@@ -50,7 +49,7 @@ class pyAgrumGenerator:
         cpt = pyAgrumGenerator.nameCpt(bn,int(var))
         
         for i in range(R):
-            res += "\tfor i"+str(i)+" in range("+nompot+".var_dims["+str(i)+"]):\n"
+            res += "\tfor i"+str(i)+" in range("+str(bn.variable(varPot[i]).domainSize())+"):\n"
             res += "\t"*(i+1)
             indexPot = ",'"+bn.variable(varPot[i]).name()+"' : i"+str(i)+indexPot
 
@@ -59,8 +58,9 @@ class pyAgrumGenerator:
             indexCpt = indexCpt+"[i"+str(varPot.index(id_var))+"]"
         
         indexPot = indexPot[1:]
-        res += "\t"*(R-2)+nompot+"[{"+indexPot+" *= "+str(cpt)+"[:]"+str(indexCpt)+"\n"
-#        res = "\t"+nompot+".multiplicateBy("+cpt+")\n"
+        res += "\t"+nompot+"[{"+indexPot+" *= "+str(cpt)+"[:]"+str(indexCpt)+"\n"
+        res += ("\t"*(R+1))+nompot+"dif[{"+indexPot+" *= "+str(cpt)+"[:]"+str(indexCpt)+"\n"
+#        res = "\t"+nompot+".multiplicateBy("+cpt+"
         return res
              
     def mulPotPot(self,nompot1,nompot2,varPot1,varPot2):
@@ -74,6 +74,9 @@ class pyAgrumGenerator:
     
     def fill(self, pot, num):
         return("\t"+str(pot)+".fill("+str(num)+")\n")
+    
+    def equa(self, nompot1, nompot2):
+        return "\t"+nompot1+" = "+nompot2+"\n"
     
     def genere(self, bn, targets, evs, comp, nameFile, nameFunc):
         stream = open(nameFile,'w')
@@ -102,6 +105,8 @@ class pyAgrumGenerator:
                 stream.write("\tres['"+cur[2]+"']=["+str(cur[1])+"[:]]\n")
             elif act == 'FIL':
                 stream.write(self.fill(cur[1],cur[2]))
+            elif act == 'EQU':
+                stream.write(self.equa(cur[1],cur[2]))
         stream.write("\treturn res")
 
         stream.close()
