@@ -59,8 +59,7 @@ class pyAgrumGenerator:
         
         indexPot = indexPot[1:]
         res += "\t"+nompot+"[{"+indexPot+" *= "+str(cpt)+"[:]"+str(indexCpt)+"\n"
-        res += ("\t"*(R+1))+nompot+"dif[{"+indexPot+" *= "+str(cpt)+"[:]"+str(indexCpt)+"\n"
-#        res = "\t"+nompot+".multiplicateBy("+cpt+"
+        #res = "\t"+nompot+".multiplicateBy("+cpt+"
         return res
              
     def mulPotPot(self,nompot1,nompot2,varPot1,varPot2):

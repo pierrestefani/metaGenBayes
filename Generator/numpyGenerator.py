@@ -60,7 +60,6 @@ class numpyGenerator:
         
         #res += "\t"*(R-2)+nompot+indexPot+" *= "+str(cpt)+str(indexCpt)+"\n"
         res += "\t"+nompot+indexPot+" *= "+str(cpt)+str(indexCpt)+"\n"
-        res += ("\t"*(R+1))+nompot+"dif"+indexPot+" *= "+str(cpt)+str(indexCpt)+"\n"
         return res
              
     def mulPotPot(self,bn,nompot1,nompot2,varPot1,varPot2):
