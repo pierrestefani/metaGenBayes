@@ -87,7 +87,7 @@ def initPotentialsAbsorp(bn,jt):
     return res
 
 def creaIniOnePotDif(bn, jt, ca, cb):
-    """Create a potential for the diffusion"""
+    """Create a potential (for ca) for the diffusion"""
     labelAbs = labelPotential(jt,ca)
     labelDif = labelAbs+"to"+labelPotential(jt,cb)
     varClique = list(jt.clique(ca))
@@ -108,12 +108,12 @@ def creaIniOnePotTar(bn, jt, ca):
     compilator.fillPotential(labelDif,1)
     compilator.multiplicationPotentials(labelDif,labelAbs,varClique,varClique)
     
-def creaIniPotentialsDiffu(bn, jt, diffu):
+def creaIniPotentialsDiffu(bn, jt, diffu, targets):
     """Create all potentials for the diffusion, we must call this function before the absorption, and after the initialization of absorption's potentials"""
     R = len(diffu)
     for i in range(R):
         creaIniOnePotDif(bn, jt, diffu[i][0], diffu[i][1])
-        if(i == (R-1) or diffu[i][1] != diffu[i+1][0]): #If i is a clique which contains a target
+        if(isTarget(bn,jt,targets,diffu[i][1])): #If i is a clique which contains a target
             creaIniOnePotTar(bn, jt, diffu[i][1])
             
 def labelPotentialEvs(bn, evs):
@@ -304,7 +304,7 @@ def output(bn,jt,target,diffu):
                 compilator.addVariablePotential(str(x), "P_"+str(x))
                 compilator.marginalisation(bn,"P_"+str(x), labelPotential(jt,j[1])+"tar",[x],list(jt.clique(j[1])))
                 compilator.normalisation("P_"+str(x), bn.variable(x).name())
-                break
+                continue
                 
     
 compilator=Compiler()
@@ -320,12 +320,11 @@ def compil(bn, targets, evs):
     targetmp = list(targets)
     deleteTarMainCliq(bn, jt, targetmp, r)
     parcours(bn, jt, targetmp, n, r, absorp, diffu)
-    
     #Creation and initialization of potentials
     creationPotentialsAbsorp(bn, jt)
     evsPotentials(bn, jt, evs, diffu)
     initPotentialsAbsorp(bn, jt)
-    creaIniPotentialsDiffu(bn, jt, diffu)
+    creaIniPotentialsDiffu(bn, jt, diffu, targets)
                 
     #Absorption and diffusion
     inference(bn, jt, absorp, diffu, targets, targetmp)
