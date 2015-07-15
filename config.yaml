@@ -10,8 +10,8 @@ target:
   - bronchitis?
 
 # specification for generation code
-language:  numpy
-filename: test/asia
+language:  php
+filename: generation
 function: getProbaForAsia
 header: |
   ################################################################################
