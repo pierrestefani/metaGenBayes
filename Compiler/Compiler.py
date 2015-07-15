@@ -8,34 +8,43 @@ Created on Thu Apr 23 17:21:42 2015
 import pyAgrum as gum
 
 class Compiler:
-    
-    def __init__(self):
-        '''The compiler class will be an array of instructions '''        
+    ''' The **Compiler** will be an array of instructions that will later be use to generate codes in the different languages supported'''
+    def __init__(self):  
         self.tab = []
         
     def createPotentialClique(self,cliq,varPot):
+        '''The CPO instruction create the variable used for every potential mentioned in the code'''
         self.tab.append(["CPO", cliq, varPot])
         
     def addVariablePotential(self,var,cliq):
+        '''Instructions for the language to add tha *var* in the *cliq* potential. Note that all these arguments are given as strings in order to
+        generate a code later'''
         self.tab.append(["ADV", var, cliq])      
     
     def addSoftEvidencePotential(self,evid,cliq,index,value):
-        '''Instructions to add soft evidences following this type of input : {'likelihood : [value, value2, ...]'}'''
+        '''Support for hard evidences will soon be implemented.
+        .. note:: 
+        Evidences should be given as python dictionaries : {'a likelihood' : [its values], etc}'''
         self.tab.append(["ASE", evid, cliq, index, value])
     
     def fillPotential(self, cliq, value):
+        '''Used to get all the values of a potential to 1 or 0, useful for the proper initializations in the different languages'''
         self.tab.append(["FIL", cliq, value])
 
     def multiplicationCPT(self, cliq, cpt, varPot):
+        '''MUC directive asks to compute a clique potential with all the probabilities of its variables'''
         self.tab.append(["MUC", cliq, cpt, varPot])
         
     def multiplicationPotentials(self, cliq1, parcliq2, varPot1, varPot2):
+        '''Instruction to compute two potentials : the variables of the potentials are passed as arguments for use in the Generators'''
         self.tab.append(["MUL", cliq1, parcliq2, varPot1, varPot2])
         
-    def marginalisation(self, bn, cliq1, seloncliq2,varPot1,varPot2):
+    def marginalization(self, bn, cliq1, seloncliq2,varPot1,varPot2):
+        '''Marginalization of a clique, given another. Variables of used cliques are passed as parameters'''
         self.tab.append(["MAR", bn, cliq1, seloncliq2,varPot1,varPot2])
        
     def normalisation(self, cliq, targ):
+        '''Instruction to normalize a clique, the last stage before the output'''
         self.tab.append(["NOR", cliq, targ])
         
     def getTab(self):
@@ -43,14 +52,8 @@ class Compiler:
 
 compilator = Compiler()
 
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Apr 21 23:50:21 2015
-
-@author: Marvin
-"""
-
 from Compiler import Compiler
+toBeMultiplicated = {}
 
 def labelPotential(jt,c):
     """Get the name of the potential for a clique c"""
@@ -96,6 +99,8 @@ def creaIniOnePotDif(bn, jt, ca, cb):
         compilator.addVariablePotential(str(j), labelDif)
     compilator.fillPotential(labelDif,1)
     compilator.multiplicationPotentials(labelDif,labelAbs,varClique,varClique)
+    if labelDif in toBeMultiplicated:
+        compilator.multiplicationPotentials(labelDif, toBeMultiplicated.get(labelDif)[0], toBeMultiplicated.get(labelDif)[1], toBeMultiplicated.get(labelDif)[2])
 
 def creaIniOnePotTar(bn, jt, ca):
     """Create a potential which contains a target for the diffusion"""
@@ -125,7 +130,7 @@ def labelPotentialEvs(bn, evs):
     return res
     
 def evsPotentials(bn, jt , evs, diffu):
-    '''Instructions to create, fill and initialize the potentials of soft evidences'''
+    '''Instructions to create, fill and initialize the potentials of soft evidences.  Hard evidences support will soon be implemented'''
     res = [] 
     ids = labelPotentialEvs(bn, evs)
     for i in ids:
@@ -146,8 +151,9 @@ def evsPotentials(bn, jt , evs, diffu):
                     compilator.multiplicationPotentials(label,"EV_"+str(i[0]),varClique,[str(i[0])])
                     for k in diffu:
                         if(k[0] == j):
-                            compilator.multiplicationPotentials(label+"to"+labelPotential(jt,k[1]),"EV_"+str(i[0]),varClique,[str(i[0])])
+                            toBeMultiplicated[label+"to"+labelPotential(jt, k[1])] =  ["EV_"+str(i[0]), varClique, [str(i[0])]]
     return res
+    
 def neighbors(jt,c):
     """List of all the direct neighbors of a clique c in a junction tree jt"""
     ls = jt.edges()
@@ -225,10 +231,10 @@ def sendMessAbsorp(bn, jt, ca, cb):
     compilator.createPotentialClique(np,varNp)
     for i in varNp:
         compilator.addVariablePotential(str(i), np)
-    compilator.marginalisation(bn,np, labelPotential(jt,ca),list(varNp),list(jt.clique(ca)))
+    compilator.marginalization(bn,np, labelPotential(jt,ca),list(varNp),list(jt.clique(ca)))
     compilator.multiplicationPotentials(labelPotential(jt,cb), np,list(jt.clique(cb)),list(varNp))
 
-def collectArroundCliq(bn, jt, ca, index, diffu):
+def collectAroundCliq(bn, jt, ca, index, diffu):
     """Updates the compiler array to collect informations arround the cliq ca. index is the index of ca in diffu and diffutmp is the list of the first element of all elements of diffu until index"""
     neigh = neighbors(jt, ca)
     neigh.remove(diffu[index][1]) #we delete the destination
@@ -247,14 +253,14 @@ def collectArroundCliq(bn, jt, ca, index, diffu):
 
 def sendMessDiffu(bn, jt, ca, cb, index, diffu):
     """Updates the compiler array with instructions to send the message (diffusion) from ca to cb"""
-    collectArroundCliq(bn, jt, ca, index, diffu)
+    collectAroundCliq(bn, jt, ca, index, diffu)
     np = labelSeparator(jt, ca, cb)+"dif"
     varNp = AinterB(list(jt.clique(ca)),list(jt.clique(cb)))
     label = labelPotential(jt,ca)+"to"+labelPotential(jt,cb)
     compilator.createPotentialClique(np, varNp)
     for i in varNp:
         compilator.addVariablePotential(str(i), np)
-    compilator.marginalisation(bn, np, label, list(varNp), list(jt.clique(ca)))
+    compilator.marginalization(bn, np, label, list(varNp), list(jt.clique(ca)))
     if(index < (len(diffu)-1) and diffu[index+1][0] == diffu[index][1]):
         compilator.multiplicationPotentials(labelPotential(jt,cb)+"to"+labelPotential(jt,diffu[index+1][1]), np, list(jt.clique(cb)), list(varNp))
     else:
@@ -286,7 +292,7 @@ def output(bn,jt,target,diffu):
         if(x in jt.clique(rac)):
             compilator.createPotentialClique("P_"+str(x),[str(x)])
             compilator.addVariablePotential(str(x), "P_"+str(x))
-            compilator.marginalisation(bn,"P_"+str(x), labelPotential(jt,rac),[x],list(jt.clique(rac)))
+            compilator.marginalization(bn,"P_"+str(x), labelPotential(jt,rac),[x],list(jt.clique(rac)))
             compilator.normalisation("P_"+str(x), bn.variable(x).name())
             ls.remove(i)
     #All the other targets
@@ -302,7 +308,7 @@ def output(bn,jt,target,diffu):
                     compilator.multiplicationPotentials(labelPotential(jt,j[1])+"tar", np,list(jt.clique(j[1])),list(varNp))
                 compilator.createPotentialClique("P_"+str(x),[str(x)])
                 compilator.addVariablePotential(str(x), "P_"+str(x))
-                compilator.marginalisation(bn,"P_"+str(x), labelPotential(jt,j[1])+"tar",[x],list(jt.clique(j[1])))
+                compilator.marginalization(bn,"P_"+str(x), labelPotential(jt,j[1])+"tar",[x],list(jt.clique(j[1])))
                 compilator.normalisation("P_"+str(x), bn.variable(x).name())
                 continue
                 
