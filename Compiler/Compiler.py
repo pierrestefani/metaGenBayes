@@ -127,6 +127,11 @@ def evsPotentials(bn, jt , evs, diffu):
     '''Instructions to create, fill and initialize the potentials of soft evidences'''
     res = [] 
     ids = labelPotentialEvs(bn, evs)
+    for i in evs:
+        num = bn.idFromName(i)
+        compilator.createPotentialClique("EV_"+str(num),str(num))
+        compilator.addVariablePotential(str(num), "EV_"+str(num))
+        compilator.addSoftEvidencePotential(str(i), "EV_"+str(num), str(0), "evs.get("+str([num,i])+"[1])")
     for i in ids:
         for j in jt.ids():
             if (i[0] in jt.clique(j)):
@@ -136,16 +141,16 @@ def evsPotentials(bn, jt , evs, diffu):
                         b = 0
                         break
                 if(b == 1):
-                    compilator.createPotentialClique("EV_"+str(i[0]),str(i[0]))
-                    compilator.addVariablePotential(str(i[0]), "EV_"+str(i[0]))
-                    cpt = 0
-                    compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), "evs.get("+str(i)+"[1])")
+#                    compilator.createPotentialClique("EV_"+str(i[0]),str(i[0]))
+#                    compilator.addVariablePotential(str(i[0]), "EV_"+str(i[0]))
+#                    cpt = 0
+#                    compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), "evs.get("+str(i)+"[1])")
                     varClique = list(jt.clique(j))
                     label = labelPotential(jt,j)
                     compilator.multiplicationPotentials(label,"EV_"+str(i[0]),varClique,[str(i[0])])
-                    for k in diffu:
-                        if(k[0] == j):
-                            compilator.multiplicationPotentials(label+"to"+labelPotential(jt,k[1]),"EV_"+str(i[0]),varClique,[str(i[0])])
+#                    for k in diffu:
+#                        if(k[0] == j):
+#                            compilator.multiplicationPotentials(label+"to"+labelPotential(jt,k[1]),"EV_"+str(i[0]),varClique,[str(i[0])])
     return res
 def neighbors(jt,c):
     """List of all the direct neighbors of a clique c in a junction tree jt"""
@@ -283,7 +288,7 @@ def inference(bn, jt, absorp, diffu, targets, targetmp, cliquesTar):
                     neigh.remove(j[0])
                     for l in neigh:
                         np = labelSeparator(jt, l, j[1])
-                        varNp = AinterB(list(jt.clique(j[1])),list(jt.clique(l)))
+                        varNp = AinterB(list(jt.clique(l)),list(jt.clique(j[1])))
                         compilator.multiplicationPotentials(labelPotential(jt,j[1])+"tar", np,list(jt.clique(j[1])),list(varNp))
     return diffu
     
@@ -326,10 +331,10 @@ def compil(bn, targets, evs):
     parcours(bn, jt, targetmp1, n, r, absorp, diffu, cliquesTar)
     #Creation and initialization of potentials
     creationPotentialsAbsorp(bn, jt)
-    evsPotentials(bn, jt, evs, diffu)
     initPotentialsAbsorp(bn, jt)
+    evsPotentials(bn, jt, evs, diffu)
     creaIniPotentialsDiffu(bn, jt, diffu, cliquesTar, targets)
-                
+    
     #Absorption and diffusion
     inference(bn, jt, absorp, diffu, targets, targetmp2, cliquesTar)
     
