@@ -9,7 +9,7 @@ metaGenBayes is a student project who computes specific probabilites (targets) g
 metaGenBayes uses a yaml configuration file, which follows these guidelines : a *bayesnet*, a list of *evidence* and *target*, a *language*, the *filename* and the *function* you want for the generated code.
 Languages supported so far are python (via numpy), php and Javascript.
 
-metaGenBayes.py is the main file. After specifying your inputs in the config.yaml, metaGenBayes.py will create the generated file in the current repertory.
+metaGenBayes.py is the main file. After specifying your inputs in the config.yaml, metaGenBayes.py will create the generated file in the current repository.
 
 ## Components
 
