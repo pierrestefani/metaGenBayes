@@ -101,7 +101,7 @@ class pyAgrumGenerator:
                 stream.write(self.margi(cur[1],cur[2],cur[3],cur[4],cur[5]))
             elif act == 'NOR':
                 stream.write(self.norm(cur[1]))
-                stream.write("\tres['"+cur[2]+"']=["+str(cur[1])+"[:]]\n")
+                stream.write("\tres['"+cur[2]+"']=np.copy("+str(cur[1])+"[:])\n")
             elif act == 'FIL':
                 stream.write(self.fill(cur[1],cur[2]))
             elif act == 'EQU':

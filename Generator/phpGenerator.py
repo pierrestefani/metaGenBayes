@@ -95,6 +95,30 @@ class phpGenerator:
         res += "\t$"+nompot1+indexPot1+" += $"+nompot2+indexPot2+";\n"
         return res
         
+    def phpToPythonRes(self, evs, nameFunc):
+        res = "echo(\"{\");\n"
+        res += "$bb=0;\n"
+        res += "foreach("+nameFunc+"(array(\n"
+        lsEvs = []
+        for name, val in evs.items():
+            lsEvs.append("\t"*2+"\""+str(name)+"\"=>"+str(val))
+        res += ",\n".join(lsEvs)
+        res += "\n)) as $k=>$v) {\n"
+        res += "\t"*2+"if($bb==1) echo(\",\");\n"
+        res += "\t"*2+"$bb=1;"
+        res += "\t"*2+"echo(\"'$k': array([\");\n"
+        res += "\t"*2+"$b=0;\n"
+        res += "\t"*2+"foreach($v as $val) {\n"
+        res += "\t"*3+"if ($b==1) echo(\",\");\n"
+        res += "\t"*3+"$b=1;\n"
+        res += "\t"*3+"echo(\" \");\n"
+        res += "\t"*3+"echo($val);\n"
+        res += "\t"*2+"}\n"
+        res += "\t"*2+"echo(\"])\");\n"
+        res += "}\n"
+        res += "echo(\"}\");"
+        return res
+        
     def norm(self, nompot):
         res = "\t$sum=0.0;\n"      
         res += "\tfor($i0=0;$i0<count($"+nompot+");$i0++)\n"
@@ -136,6 +160,6 @@ class phpGenerator:
         for i in evs:
             ev = "\t\""+str(i)+"\""+" => "+str(evs[i])
             evsphp.append(ev)
-        
-        stream.write("print_r(getValue(array(\n"+",\n".join(evsphp)+"\n)));\n")
+        stream.write(self.phpToPythonRes(evs, nameFunc))
+#        stream.write("print_r(getValue(array(\n"+",\n".join(evsphp)+"\n)));\n")
         stream.close()
