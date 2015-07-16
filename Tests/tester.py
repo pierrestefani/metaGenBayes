@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 
-import sys; import os
+import sys
+import os
 sys.path.insert(0, os.path.abspath('..'))
 
-import os
 import subprocess
+import json
+
 import pyAgrum as gum
 import numpy as np
+
 import random
-import json
-from Compiler import Compiler
 random.seed()
+
+from Compiler import Compiler
 import Generator.numpyGenerator
 import Generator.pyAgrumGenerator 
 import Generator.phpGenerator
@@ -29,18 +32,9 @@ resPyAgrumGen = {}
 error = True
 
 
-def importOrReload(module_name, *names):
-    import sys
-
-    if module_name in sys.modules:
-        reload(sys.modules[module_name])
-    else:
-        __import__(module_name, fromlist=names)
-
-    for name in names:
-        globals()[name] = getattr(sys.modules[module_name], name)
-
-
+#print(targets)
+#print(evs)
+#print(resPyAgrumRef)
 
 def randomEvidenceGenerator(bn):
     '''randomEvidenceGenerator create a dictionaries of soft evidences to be used in the testing of metaGenBayes functions'''
@@ -72,18 +66,38 @@ def targetSelecter(bn, evs):
         cpt = cpt + 1
     return res
 
+def describeJunctionTree(bn, jt, target):
+    res = ""
+    for i in jt.ids():
+        res += str(i)+"---------\n"
+        for j in jt.clique(i):
+            res += bn.variable(j).name()+"\n"
+    res += "\n"+str(list(jt.edges()))
+    res += "\nClique racine : "+str(Compiler.mainClique(bn, jt, target))
+    return res
+
 def errorMarginChecker(generated, reference, targets, epsilon):
     '''checks the deviation of thr generated results from a reference. If the deviation is > than epsilon, errorMarginChecker returns the boolean false'''
+    print(reference)    
     for t in reference:
         i=0
         boolean = True
         while(i<bn.variable(bn.idFromName(t)).domainSize()):
-            if(abs(reference.get(t)[i] - generated.get(t)[0][i])/reference.get(t)[i] >epsilon):
+            if(abs(reference.get(t)[i] - generated.get(t)[i])/reference.get(t)[i] >epsilon):
                 boolean=False
-                print("ERROR @ target "+t+", value "+str(i)+" is: "+str(generated.get(t)[0][i])+", should be "+str(reference.get(t)[i])+"\n")
+                print("ERROR @ target "+t+", value "+str(i)+" is: "+str(generated.get(t)[i])+", should be "+str(reference.get(t)[i])+"\n")
                 break
             i=i+1
     return boolean         
+
+def errorWriter(language, filename):
+     print("Error @ "+language+" version")
+     target = open(filename, 'w')
+     target.write('Bayesian network : '+str(bn.ids())+'\n')
+     target.write('countNOET : '+str(countNOET)+'\ncountNOBN = '+str(countNOBN)+'\n')
+     target.write('Evidences : '+str(evs)+'\nTargets : '+str(targets)+'\n')
+     target.write('\n\nJunction Tree description : \n'+describeJunctionTree(bn, jt, targets))
+     target.close()
 
 
 
@@ -102,6 +116,7 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
         ie=gum.LazyPropagation(bn)
         ie.setEvidence(evs)
         ie.makeInference()
+        jt = ie.junctionTree()
         for t in targets:
             resPyAgrumRef[t] = list(ie.posterior(bn.idFromName(t)))
             
@@ -109,44 +124,43 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
         resPyAgrumGen.clear()
         generator= Generator.pyAgrumGenerator.pyAgrumGenerator()
         generator.genere(bn, targets, evs, comp, "pyAgrumGenerated____test.py", "getValue")
-        importOrReload("pyAgrumGenerated____test", "getValue")
+        from pyAgrumGenerated____test import getValue
         resPyAgrumGen = getValue(evs)
-        print('resPyAgrumGen : '+str(resPyAgrumGen))
         print('resPyAgrumRef : '+str(resPyAgrumRef))
+        print('resPyAgrumGen : '+str(resPyAgrumGen))
         bool_pyAg = errorMarginChecker(resPyAgrumGen, resPyAgrumRef, targets, 0.1)
         if(not(bool_pyAg)):
-            print("Error @ pyAgrumGenerated version")
-            print('countNOET : '+str(countNOET)+'\ncountNOBN = '+str(countNOBN)+'\nBayesian network : '+str(bn.ids())+'\nEvidences : '+str(evs)+'\nTargets : '+str(targets))
+            print("ERROR")
+            errorWriter('pyAgrum', 'errorPyAgrum.txt')
             error = False
             break
         
         '''numpy generated version'''
         resNumpyGen.clear()
         generator = Generator.numpyGenerator.numpyGenerator()
-        generator.genere(bn, targets, evs, comp, "numpyGenerated____test.py", "getValue")
-        importOrReload('numpyGenerated____test', 'getValue')
-        resNumpyGen = getValue(evs)
+        generator.genere(bn, targets, evs, comp, "numpyGenerated____test.py", "getValueNP")
+        from numpyGenerated____test import getValueNP
+        resNumpyGen = getValueNP(evs)
         print("resNumpyGen : "+str(resNumpyGen))
         bool_numpy = errorMarginChecker(resNumpyGen, resPyAgrumRef, targets, 0.1)
         if(not(bool_numpy)):
-            print("Error @ numpyGenerated version\n")
-            print("countNOET : "+str(countNOET)+"\ncountNOBN : "+str(countNOBN)+"\nBayesian Network : "+str(bn.ids())+"\nEvidences : "+str(evs)+"\nTargets : "+str(targets))
+            print("ERROR")
+            errorWriter('numpy', 'errorNumpy.txt')
             error = False
             break
-        
+
         '''PHP generated version
         resPHPGen.clear()
-        from Generator.phpGenerator import phpGenerator
-        generator = phpGenerator()
-        generator.genere(bn, targets, evs, comp, "PHPGenerated____test.php", "getValue")
-        proc = subprocess.call(["php", "PHPGenerated____test.php"])
-        resPHPGen = proc.stdout.read()
+        generator = Generator.phpGenerator.phpGenerator()
+        generator.genere(bn, targets, evs, comp, "PHPGenerated____test.php", "getValuePHP")
+        proc = subprocess.Popen("php PHPGenerated____test.php", shell = True, stdout = subprocess.PIPE)
         #print("resPHPGen : "+str(resPHPGen))
         bool_PHP = errorMarginChecker(resPHPGen, resPyAgrumRef, targets, 0.1)
         if(not(bool_PHP)):
-            specs = input("Error @ PHPGenerated version, y/n for specs")
-            if (specs=='y'):
-                print("countNOET : "+countNOET+"\countNOBN : "+countNOBN+"\nBayesian Network : "+bn.ids()+"\nEvidences : "+evs+"\nTargets : "+targets)
+            print("ERROR")
+            errorWriter('php', 'errorPHP.txt')
+            error = False
+            break
       '''
         
         os.system('rm pyAgrumGenerated____test.py')
