@@ -42,7 +42,7 @@ import pyAgrum as gum
 #bn.addArc(e,c)
 #bn.generateCPTs()
 
-bn = gum.loadBN("C:/Users/Marvin/Desktop/Informatique/ProjetPIMA/metaGenBayes/BNs/alarm.bif")
+bn = gum.loadBN("/home/ubuntu/metaGenBayes/BNs/alarm.bif")
 
 #Choose the rights targets
 #targets = ["d","a"] #Our own bn
@@ -84,7 +84,7 @@ print("** Génération PHP **")
 generator = phpGenerator()
 generator.genere(bn,targets,evs,comp,"generatedPHP.php","getValue")
 import subprocess
-proc = subprocess.Popen("php C:/Users/Marvin/Desktop/Informatique/ProjetPIMA/metaGenBayes/generatedPHP.php", shell = True, stdout = subprocess.PIPE)
+proc = subprocess.Popen("php /home/ubuntu/metaGenBayes/generatedPHP.php", shell = True, stdout = subprocess.PIPE)
 script_response = proc.stdout.read()
 print(script_response)
 
