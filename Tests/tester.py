@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 import subprocess
 import json
+import ast
 
 import pyAgrum as gum
 import numpy as np
@@ -36,9 +37,20 @@ error = True
 #print(evs)
 #print(resPyAgrumRef)
 
+def importOrReload(module_name, *names):
+    import sys
+
+    if module_name in sys.modules:
+        reload(sys.modules[module_name])
+    else:
+        __import__(module_name, fromlist=names)
+
+    for name in names:
+        globals()[name] = getattr(sys.modules[module_name], name)
+
+
 def randomEvidenceGenerator(bn):
     '''randomEvidenceGenerator create a dictionaries of soft evidences to be used in the testing of metaGenBayes functions'''
-    '''v1 : binary probabilities generated'''
     evs = {}
     nodeToEvs = list(bn.ids())
     print(nodeToEvs)
@@ -52,6 +64,7 @@ def randomEvidenceGenerator(bn):
     return evs
 
 def targetSelecter(bn, evs):
+    '''selects a few targets that are in your bn and not evidences.'''
     res = list()
     possibleTargets = list()
     for i in bn.ids():
@@ -67,6 +80,7 @@ def targetSelecter(bn, evs):
     return res
 
 def describeJunctionTree(bn, jt, target):
+    '''String describing key elements of the junction tree like the components of every cliques, the edges, the main clique chosen by Compiler'''
     res = ""
     for i in jt.ids():
         res += str(i)+"---------\n"
@@ -77,8 +91,7 @@ def describeJunctionTree(bn, jt, target):
     return res
 
 def errorMarginChecker(generated, reference, targets, epsilon):
-    '''checks the deviation of thr generated results from a reference. If the deviation is > than epsilon, errorMarginChecker returns the boolean false'''
-    print(reference)    
+    '''checks the deviation of thr generated results from a reference. If the deviation is > than epsilon, errorMarginChecker returns the boolean false'''  
     for t in reference:
         i=0
         boolean = True
@@ -102,6 +115,7 @@ def errorWriter(language, filename):
 
 
 while(countNOBN < NUMBER_OF_NETWORKS and error):
+    #bn = gum.loadBN("/home/ubuntu/metaGenBayes/BNs/insurance.bif")
     bn = gum.BNGenerator().generate()
     bn.saveBIF('tester.bif')
     
@@ -124,7 +138,7 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
         resPyAgrumGen.clear()
         generator= Generator.pyAgrumGenerator.pyAgrumGenerator()
         generator.genere(bn, targets, evs, comp, "pyAgrumGenerated____test.py", "getValue")
-        from pyAgrumGenerated____test import getValue
+        importOrReload('pyAgrumGenerated____test', 'getValue')
         resPyAgrumGen = getValue(evs)
         print('resPyAgrumRef : '+str(resPyAgrumRef))
         print('resPyAgrumGen : '+str(resPyAgrumGen))
@@ -135,11 +149,12 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
             error = False
             break
         
+        
         '''numpy generated version'''
         resNumpyGen.clear()
         generator = Generator.numpyGenerator.numpyGenerator()
         generator.genere(bn, targets, evs, comp, "numpyGenerated____test.py", "getValueNP")
-        from numpyGenerated____test import getValueNP
+        importOrReload('numpyGenerated____test', 'getValueNP')
         resNumpyGen = getValueNP(evs)
         print("resNumpyGen : "+str(resNumpyGen))
         bool_numpy = errorMarginChecker(resNumpyGen, resPyAgrumRef, targets, 0.1)
@@ -149,21 +164,23 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
             error = False
             break
 
-        '''PHP generated version
+        '''PHP generated version'''
         resPHPGen.clear()
         generator = Generator.phpGenerator.phpGenerator()
         generator.genere(bn, targets, evs, comp, "PHPGenerated____test.php", "getValuePHP")
         proc = subprocess.Popen("php PHPGenerated____test.php", shell = True, stdout = subprocess.PIPE)
-        #print("resPHPGen : "+str(resPHPGen))
+        resPHPGen = ast.literal_eval('"'+proc.stdout.read()+'"')
+        print("resPHPGen : "+str(resPHPGen))
+        print(resPHPGen.keys())
         bool_PHP = errorMarginChecker(resPHPGen, resPyAgrumRef, targets, 0.1)
         if(not(bool_PHP)):
             print("ERROR")
             errorWriter('php', 'errorPHP.txt')
             error = False
             break
-      '''
+      
         
-        os.system('rm pyAgrumGenerated____test.py')
+
         countNOET = countNOET + 1
     
     countNOBN = countNOBN + 1
