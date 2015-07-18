@@ -114,8 +114,6 @@ def creaIniPotentialsDiffu(bn, jt, diffu, cliquesTar, targets):
 def evsPotentials(bn, jt , evs, diffu):
     '''Instructions to create, fill and initialize the potentials of soft evidences'''
     res = [] 
-    ###A AMELIORER !!!!
-#    ids = labelPotentialEvs(bn, evs) cette fonction est inutile
     for i in evs:
         num = bn.idFromName(i)
         compilator.createPotentialClique("EV_"+str(num),str(num))
@@ -131,17 +129,10 @@ def evsPotentials(bn, jt , evs, diffu):
                             b = 0
                             break
                     if(b == 1):
-    #                    compilator.createPotentialClique("EV_"+str(i[0]),str(i[0]))
-    #                    compilator.addVariablePotential(str(i[0]), "EV_"+str(i[0]))
-    #                    cpt = 0
-    #                    compilator.addSoftEvidencePotential(str(i[1]), "EV_"+str(i[0]), str(cpt), "evs.get("+str(i)+"[1])")
                         varClique = list(jt.clique(j))
                         label = labelPotential(jt,j)
                         compilator.multiplicationPotentials(label,"EV_"+str(i),varClique,[str(i)])
                         break
-#                    for k in diffu:
-#                        if(k[0] == j):
-#                            compilator.multiplicationPotentials(label+"to"+labelPotential(jt,k[1]),"EV_"+str(i[0]),varClique,[str(i[0])])
     return res
     
 def neighbors(jt,c):
@@ -232,32 +223,22 @@ def collectAroundCliq(bn, jt, ca, index, diffu):
     if(index > 0 and diffu[index-1][1] == ca):
         neigh.remove(diffu[index-1][0]) #we delete the neighbor who has already given information
     for i in neigh:
-        if([i,ca] in diffu[:index-1]): #The potential is a "diffusion's potential"
-            np = labelSeparator(jt, i, ca)+"dif"
-            varNp = AinterB(list(jt.clique(i)),list(jt.clique(ca)))
-            compilator.multiplicationPotentials(labelPotential(jt,ca)+"to"+labelPotential(jt,diffu[index][1]),np, list(jt.clique(ca)), list(varNp))
-        else: #The potential is a "absorption's potential"
-            np = labelSeparator(jt, i, ca)
-            varNp = AinterB(list(jt.clique(i)),list(jt.clique(ca)))
-            compilator.multiplicationPotentials(labelPotential(jt,ca)+"to"+labelPotential(jt,diffu[index][1]),np, list(jt.clique(ca)), list(varNp))
+        np = labelSeparator(jt, i, ca)
+        varNp = AinterB(list(jt.clique(i)),list(jt.clique(ca)))
+        compilator.multiplicationPotentials(labelPotential(jt,ca)+"to"+labelPotential(jt,diffu[index][1]),np, list(jt.clique(ca)), list(varNp))
             
 def collectAroundCliqTar(bn, jt, ca, diffu):
     """Updates the compiler array to collect informations arround the cliq ca (which contains targets)"""
     neigh = neighbors(jt, ca)
     for i in neigh:
-        if([i,ca] in diffu): #The message has been created in the diffusion
-            np = labelSeparator(jt, i, ca)+"dif"
-            varNp = AinterB(list(jt.clique(i)),list(jt.clique(ca)))
-            compilator.multiplicationPotentials(labelPotential(jt,ca)+"tar",np, list(jt.clique(ca)), list(varNp))
-        else: #The message has been created in the absorption
-            np = labelSeparator(jt, i, ca)
-            varNp = AinterB(list(jt.clique(i)),list(jt.clique(ca)))
-            compilator.multiplicationPotentials(labelPotential(jt,ca)+"tar",np, list(jt.clique(ca)), list(varNp))
+        np = labelSeparator(jt, i, ca)
+        varNp = AinterB(list(jt.clique(i)),list(jt.clique(ca)))
+        compilator.multiplicationPotentials(labelPotential(jt,ca)+"tar",np, list(jt.clique(ca)), list(varNp))
 
 def sendMessDiffu(bn, jt, ca, cb, index, diffu, cliquesTar):
     """Updates the compiler array with instructions to send the message (diffusion) from ca to cb"""
     collectAroundCliq(bn, jt, ca, index, diffu)
-    np = labelSeparator(jt, ca, cb)+"dif"
+    np = labelSeparator(jt, ca, cb)
     varNp = AinterB(list(jt.clique(ca)),list(jt.clique(cb)))
     label = labelPotential(jt,ca)+"to"+labelPotential(jt,cb)
     compilator.createPotentialClique(np, varNp)
@@ -266,8 +247,6 @@ def sendMessDiffu(bn, jt, ca, cb, index, diffu, cliquesTar):
     compilator.marginalization(bn, np, label, list(varNp), list(jt.clique(ca)))
     if(index < (len(diffu)-1) and diffu[index+1][0] == diffu[index][1]):
         compilator.multiplicationPotentials(labelPotential(jt,cb)+"to"+labelPotential(jt,diffu[index+1][1]), np, list(jt.clique(cb)), list(varNp))
-#    if(cb in cliquesTar.values()):
-#        compilator.multiplicationPotentials(labelPotential(jt,cb)+"tar", np, list(jt.clique(cb)), list(varNp))
 
 def deleteTarMainCliq(bn, jt, targetmp, rac):
     for i in jt.clique(rac):
@@ -283,7 +262,7 @@ def inference(bn, jt, absorp, diffu, targets, targetmp, cliquesTar):
     if(diffu):
         for i in range(len(diffu)):
             sendMessDiffu(bn, jt, diffu[i][0], diffu[i][1], i, diffu, cliquesTar)
-
+        #We collect around cliques which contains targets
         for i in cliquesTar.values():
             collectAroundCliqTar(bn, jt, i, diffu)
     return diffu
