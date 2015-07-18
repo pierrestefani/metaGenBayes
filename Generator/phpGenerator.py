@@ -106,7 +106,7 @@ class phpGenerator:
         res += "\n)) as $k=>$v) {\n"
         res += "\t"*2+"if($bb==1) echo(\",\");\n"
         res += "\t"*2+"$bb=1;"
-        res += "\t"*2+"echo(\"'$k': array([\");\n"
+        res += "\t"*2+"echo(\"'$k': [[\");\n"
         res += "\t"*2+"$b=0;\n"
         res += "\t"*2+"foreach($v as $val) {\n"
         res += "\t"*3+"if ($b==1) echo(\",\");\n"
@@ -114,7 +114,7 @@ class phpGenerator:
         res += "\t"*3+"echo(\" \");\n"
         res += "\t"*3+"echo($val);\n"
         res += "\t"*2+"}\n"
-        res += "\t"*2+"echo(\"])\");\n"
+        res += "\t"*2+"echo(\"]]\");\n"
         res += "}\n"
         res += "echo(\"}\");"
         return res
