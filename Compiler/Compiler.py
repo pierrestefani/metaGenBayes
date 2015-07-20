@@ -14,10 +14,11 @@ class Compiler:
         generate a code later'''
         self.tab.append(["ADV", var, cliq])      
     
-    def addSoftEvidencePotential(self,evid,cliq,index,value):
-        '''Support for hard evidences will soon be implemented.
+    def addEvidencePotential(self,evid,cliq,index,value):
+        '''Support for hard evidences is done.
         .. note:: 
-        Evidences should be given as python dictionaries : {'a likelihood' : [its values], etc}'''
+        Evidences should be given as python dictionaries : {'a likelihood' : [its values], etc}. For an hard evidence, format supported
+        is : {'a likelihood' : index} where index is the certain probability'''
         self.tab.append(["ASE", evid, cliq, index, value])
     
     def fillPotential(self, cliq, value):
@@ -43,9 +44,19 @@ class Compiler:
     def getTab(self):
         return self.tab
 
-compilator = Compiler()
+''' Meta code functions used to create the array of instructions: '''
 
-from Compiler import Compiler
+
+def hardToSoftEvidences(bn, evs):
+    '''Take the evidences input and convert the hard evidences in soft ones'''
+    for i in evs:
+        arr = []
+        if(not(isinstance(evs.get(i), list))):
+            print('turning '+str(i)+' into a soft evidence')
+            print(bn.variable(bn.idFromName('n_6')).domainSize())
+            arr = [0]*(bn.variable(bn.idFromName('n_6')).domainSize())
+            arr[evs.get(i)] = 1.0
+            evs[i] = arr
 
 def labelPotential(jt,c):
     """Get the name of the potential for a clique c"""
@@ -118,7 +129,7 @@ def evsPotentials(bn, jt , evs, diffu):
         num = bn.idFromName(i)
         compilator.createPotentialClique("EV_"+str(num),str(num))
         compilator.addVariablePotential(str(num), "EV_"+str(num))
-        compilator.addSoftEvidencePotential(str(i), "EV_"+str(num), str(0), "evs.get("+str([num,i])+"[1])")
+        compilator.addEvidencePotential(str(i), "EV_"+str(num), str(0), "evs.get("+str([num,i])+"[1])")
     for i in bn.ids():
         if(bn.variable(i).name() in evs):
             for j in jt.ids():
@@ -295,6 +306,7 @@ def compil(bn, targets, evs):
     """This function uses all the predefined functions above to fill the compiler array with instructions to get the targets of a bn according to evidences"""
     ie=gum.LazyPropagation(bn)
     jt = ie.junctionTree()
+    hardToSoftEvidences(bn, evs)
     absorp = [] #the list for the absorption
     diffu = [] #the list for the diffusion
     cliquesTar = {} #the dictionnary which contains the couples {target:clique}
