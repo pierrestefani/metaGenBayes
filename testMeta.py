@@ -88,3 +88,10 @@ proc = subprocess.Popen("php /home/ubuntu/metaGenBayes/generatedPHP.php", shell 
 script_response = proc.stdout.read()
 print(script_response)
 
+
+print("** Génération Javascript **")
+generator = javascriptGenerator()
+generator.genere(bn,targets,evs,comp,"generatedJavascript.js","getValue")
+proc = subprocess.Popen('nodejs /home/ubuntu/metaGenBayes/generatedJavascript.js', shell = True, stdout = subprocess.PIPE)
+script_response = proc.stdout.read()
+print(script_response)
