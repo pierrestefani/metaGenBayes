@@ -42,24 +42,8 @@ class pyAgrumGenerator:
         return("\t"+str(nompot)+"[:]="+value+"\n")
         
     def mulPotCpt(self, bn, nompot, var, varPot):
-        R = len(varPot)
-        res = ""
-        indexPot = "}]"
-        indexCpt = ""
         cpt = pyAgrumGenerator.nameCpt(bn,int(var))
-        
-        for i in range(R):
-            res += "\tfor i"+str(i)+" in range("+str(bn.variable(varPot[i]).domainSize())+"):\n"
-            res += "\t"*(i+1)
-            indexPot = ",'"+bn.variable(varPot[i]).name()+"' : i"+str(i)+indexPot
-
-        for i in bn.cpt(int(var)).var_names:
-            id_var = bn.idFromName(i)
-            indexCpt = indexCpt+"[i"+str(varPot.index(id_var))+"]"
-        
-        indexPot = indexPot[1:]
-        res += "\t"+nompot+"[{"+indexPot+" *= "+str(cpt)+"[:]"+str(indexCpt)+"\n"
-        #res = "\t"+nompot+".multiplicateBy("+cpt+"
+        res = "\t"+nompot+".multiplicateBy("+cpt+")\n"
         return res
              
     def mulPotPot(self,nompot1,nompot2,varPot1,varPot2):
