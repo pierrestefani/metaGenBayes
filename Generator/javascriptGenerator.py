@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Jun 14 11:51:53 2015
-
 @author: ubuntu
 """
 
@@ -61,6 +60,8 @@ class javascriptGenerator:
         cpt = javascriptGenerator.nameCpt(bn, int(var))
         sizePot = 1
         sizeCpt = 1
+        for i in bn.cpt(int(var)).var_names:
+            sizeCpt *= bn.variable(bn.idFromName(i)).domainSize()
         
         for i in range(R):
             res += "\tfor (i"+str(i)+"=0; i"+str(i)+"<"+str(bn.variable(varPot[i]).domainSize())+";i"+str(i)+"++){\n"
@@ -71,8 +72,8 @@ class javascriptGenerator:
 
         for i in bn.cpt(int(var)).var_names:
             id_var = bn.idFromName(i)
+            sizeCpt /= bn.variable(varPot[varPot.index(id_var)]).domainSize()
             indexCptList.append("i"+str(varPot.index(id_var))+"*"+str(sizeCpt))
-            sizeCpt *= bn.variable(varPot[varPot.index(id_var)]).domainSize()
         indexCpt += "+".join(indexCptList)+"]"
         
         res += "\t"*(R-2)+nompot+indexPot+" *= "+str(cpt)+str(indexCpt)+";"+"}"*(R)+"\n"
@@ -169,14 +170,4 @@ class javascriptGenerator:
         
         stream.write("console.log(getValue({\n"+",\n".join(evsjs)+"\n}));\n")
         stream.close()
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
