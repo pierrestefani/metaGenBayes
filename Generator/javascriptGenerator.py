@@ -15,13 +15,26 @@ def flatten(liste):
         else:
             yield i
 
+def makeIndexOutOfDict(dictionary, potSize):
+    '''From a dictionary of indexes, lenghts, structured in the margi function,
+    to the string uses in the potential index of the same function'''
+    arr = list()
+    size = potSize
+    ind=0
+    while(ind < len(dictionary)):
+        for i in dictionary:
+            if(dictionary.get(i)[0] == ind):
+                size /= dictionary.get(i)[1]
+                arr.append(str(i)+'*'+str(size))
+                ind += 1
+    return "+".join(arr)
 
 class javascriptGenerator:
     @classmethod
     def nameCpt(self, bn, var):
-        parents = ""
+        parents = []
         for i in bn.parents(var):
-            parents += str(i)
+            parents.append(str(i))
         parents = "_".join(parents)
         return "P"+str(var)+"given"+parents
         
@@ -34,7 +47,7 @@ class javascriptGenerator:
         
     def creaPot(self, bn, nomPot, varPot):
         dim = []
-        res = "\t"
+        res = ""
         for i in varPot:
             dim += str(bn.variable(int(i)).domainSize())
         dim = "*".join(dim)
@@ -42,7 +55,7 @@ class javascriptGenerator:
             res += "\t"+nomPot+"= new Float32Array("+str(dim)+");\n"
             res += "\tfor(i=0;i<"+str(dim)+";i++)\n\t\t"+nomPot+"[i] = 1.0;\n"
         else:
-            res += nomPot+"= new Float32Array("+str(dim)+");\n"
+            res += "\t"+nomPot+"= new Float32Array("+str(dim)+");\n"
             res += "\tfor(i=0;i<"+str(dim)+";i++)\n\t\t"+nomPot+"[i] = 0.0;\n"      
         return res
         
@@ -76,7 +89,7 @@ class javascriptGenerator:
             indexCptList.append("i"+str(varPot.index(id_var))+"*"+str(sizeCpt))
         indexCpt += "+".join(indexCptList)+"]"
         
-        res += "\t"*(R-2)+nompot+indexPot+" *= "+str(cpt)+str(indexCpt)+";"+"}"*(R)+"\n"
+        res += "\t"+nompot+indexPot+" *= "+str(cpt)+str(indexCpt)+";"+"}"*(R)+"\n"
         return res
         
     def mulPotPot(self,bn,nompot1,nompot2,varPot1,varPot2):
@@ -103,33 +116,37 @@ class javascriptGenerator:
         res += "\t"*(R-2)+nompot1+indexPot1+" *= "+nompot2+indexPot2+";"+"}"*(R)+"\n"
         return res
         
+        
     def margi(self,bn,nompot1,nompot2,varPot1,varPot2):
         res = ""
         R1 = len(varPot1)
-        indexPot1List = list()
-        indexPot2List = list()
+        R2 = len(varPot2)
         indexPot1 = "["
         indexPot2 = "["
+        indexPot1List = list()
+        indexPot2Dict = {}
+        sizePot1=1
+        sizePot2=1
         varPot3 = list(set(varPot2) - set(varPot1))
         R3 = len(varPot3)
-        sizePot1 = 1
-        sizePot2 = 1
+        
         for i in range(R1):
             res += "\tfor (i"+str(i)+"=0;i"+str(i)+"<"+str(bn.variable(varPot1[i]).domainSize())+";i"+str(i)+"++){\n"
             res += "\t"*(i+1)
             indexPot1List.append("i"+str(i)+"*"+str(sizePot1))
             sizePot1 *= bn.variable(varPot1[i]).domainSize()
-            indexPot2List.append("i"+str(i)+"*"+str(sizePot2))
+            indexPot2Dict['i'+str(i)] = [R2-1-varPot2.index(int(varPot1[i])), bn.variable(varPot2[varPot2.index(int(varPot1[i]))]).domainSize()]
             sizePot2 *= bn.variable(varPot2[varPot2.index(int(varPot1[i]))]).domainSize()
         indexPot1 += "+".join(indexPot1List)+"]"
-            
+        
         for j in range(R3):
-            res += "\tfor (j"+str(j)+"=0;j"+str(j)+"<"+str(bn.variable(varPot2[j]).domainSize())+";j"+str(j)+"++){\n"
+            res += "\tfor (j"+str(j)+"=0;j"+str(j)+"<"+str(bn.variable(varPot3[j]).domainSize())+";j"+str(j)+"++){\n"
             res += "\t"*(j+i+2)
-            indexPot2List.append("j"+str(j)+"*"+str(sizePot2))
-            sizePot2 *= bn.variable(varPot2[varPot2.index(int(varPot3[j]))]).domainSize()
-        indexPot2 += "+".join(indexPot2List)+"]"
-        res += "\t"+nompot1+indexPot1+" += "+nompot2+indexPot2+";"+"}"*(R1+R3)+"\n"
+            indexPot2Dict['j'+str(j)] = [R2-1-varPot2.index(int(varPot3[j])), bn.variable(varPot3[j]).domainSize()]
+            sizePot2 *= bn.variable(varPot3[j]).domainSize()
+            
+        indexPot2 += makeIndexOutOfDict(indexPot2Dict, sizePot2)
+        res += "\t"+nompot1+indexPot1+" += "+nompot2+indexPot2+"];"+"}"*(R1+R3)+"\n"
         return res
         
     def norm(self, nompot):
