@@ -63,7 +63,8 @@ def loadConfig(filename):
   return doc
 
 config=loadConfig('config.yaml')
-print("maintenant, je compile {0} en {1} dans la fonction {2}".format(
+print("Compiling {0} ({1}) in function {2} of file {3}".format(
   config['bayesnet'],
   config['language'],
-  config['function']))
+  config['function'],
+  config['filename']))
