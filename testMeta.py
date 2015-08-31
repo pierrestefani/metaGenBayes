@@ -42,22 +42,22 @@ import pyAgrum as gum
 #bn.addArc(e,c)
 #bn.generateCPTs()
 
-bn = gum.loadBN("/home/ubuntu/metaGenBayes/BNs/alarm.bif")
+bn = gum.loadBN("/home/ubuntu/metaGenBayes/BNs/hailfinder.bif")
 
 #Choose the rights targets
 #targets = ["d","a"] #Our own bn
 #targets = ["bronchitis?","positive_XraY?"] #asia
 #targets = ["HYPOVOLEMIA","CATECHOL"] #alarm1
-targets = ["ERRCAUTER","HR","HRBP","MINVOLSET","VENTMACH"] #alarm2
-#targets = ["Boundaries","SynForcng"] #hailfinder
+#targets = ["ERRCAUTER","HR","HRBP","MINVOLSET","VENTMACH"] #alarm2
+targets = ["Boundaries","SynForcng"] #hailfinder
 
 #Choose the rigts evs
 #evs = {"e":[1,0], "b":[0.25,0.75]} #Our own bn
 #evs = {"smoking?":[0.5,0.5]} #asia
 #evs = {"ANAPHYLAXIS":[0.4,0.6]} #alarm1
-evs = {"HREKG":[0.4,0.6,0.0]} #alarm2
+#evs = {"HREKG":[0.4,0.6,0.0]} #alarm2
 #evs = {"INTUBATION":[1,0,0]}
-#evs = {"AMInstabMt":[0,1,0]} #hailfinder
+evs = {"AMInstabMt":[0,1,0]} #hailfinder
 
 print("** Version aGrUM **")
 ie=gum.LazyPropagation(bn)

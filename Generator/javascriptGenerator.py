@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Jun 14 11:51:53 2015
-@author: ubuntu
-"""
-
 import time
 
 def flatten(liste):
@@ -185,6 +179,6 @@ class javascriptGenerator:
             ev = "\t\""+str(i)+"\""+" : "+str(evs[i])
             evsjs.append(ev)
         
-        stream.write("console.log(getValue({\n"+",\n".join(evsjs)+"\n}));\n")
+        stream.write("console.log("+nameFunc+"({\n"+",\n".join(evsjs)+"\n}));\n")
         stream.close()
         

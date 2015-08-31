@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Mar 24 14:39:48 2015
-@author: Marvin
-"""
 # Code generation API
 from AbstractGenerator import AbstractGenerator
 import time

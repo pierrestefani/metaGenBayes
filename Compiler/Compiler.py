@@ -72,20 +72,6 @@ def creationPotentialsAbsorp(bn, jt, absorp):
         for j in jt.clique(i):
             compilator.addVariablePotential(str(j), label)
         compilator.fillPotential(label,1)
-#    R = len(absorp)    
-#    for i in range(R):
-#        cliq = absorp[i][0]
-#        label = labelPotential(jt,cliq)+"ind"+str(i)
-#        compilator.createPotentialClique(label,list(jt.clique(cliq)))
-#        for j in jt.clique(cliq):
-#            compilator.addVariablePotential(str(j),label)
-#        compilator.fillPotential(label,1)
-#    rac = absorp[-1][1]
-#    label = labelPotential(jt,rac)+"ind"+str(R-1)
-#    compilator.createPotentialClique(label,list(jt.clique(rac)))
-#    for j in jt.clique(rac):
-#        compilator.addVariablePotential(str(j),label)
-#    compilator.fillPotential(label,1)
 
 def initPotentialsAbsorp(bn,jt, absorp):
     """Instructions for the initialization of the potentials"""    
@@ -102,42 +88,12 @@ def initPotentialsAbsorp(bn,jt, absorp):
                 if(b == 1):
                     compilator.multiplicationCPT(labelPotential(jt,j)+"c"+str(j),str(i),list(jt.clique(j)))
                     break
-#    R = len(absorp)
-#    lsCpt = list(bn.ids())
-#    for i in bn.ids():
-#        cpt = 0
-#        for j in range(R):
-#            cpt += 1
-#            cliq = absorp[j][0]
-#            if(i in jt.clique(cliq)):
-#                b = 1
-#                for l in bn.parents(i):
-#                    if(not(l in jt.clique(cliq))):
-#                        b = 0
-#                        break
-#                if(b == 1):
-#                    compilator.multiplicationCPT(labelPotential(jt,cliq)+"ind"+str(j),str(i), list(jt.clique(cliq)))
-#                    lsCpt.remove(i)
-#                    break
-#    if(lsCpt):
-#        for i in lsCpt: #On place les cpt qui n'ont pas trouvés de clique (parmis les premiers éléments de absorb), elles vont donc forcément dans la clique racine.
-#            rac = absorp[-1][1]            
-#            compilator.multiplicationCPT(labelPotential(jt,rac)+"ind"+str(R-1),str(i), list(jt.clique(rac)))
-                
-#def lookingForIndex(bn, jt, ca, ls):
-#    R = len(ls)    
-#    for i in range(R):
-#        if(ls[i][0] == ca):
-#            return i
-#    return R-1
     
 def creaIniOnePotDif(bn, jt, ca, cb, indexca, absorp):
     """Create a potential (for ca) for the diffusion"""
     labelAbs = labelPotential(jt,ca)
-#    labelDif = labelAbs+"to"+labelPotential(jt,cb)+"ind"+str(indexca)
     labelDif = labelAbs+"to"+labelPotential(jt,cb)+"c"+str(ca)
     labelAbs += "c"+str(ca)
-#    labelAbs += "ind"+str(lookingForIndex(bn, jt, ca, absorp))
     varClique = list(jt.clique(ca))
     compilator.createPotentialClique(labelDif,varClique)
     for j in varClique:
@@ -149,7 +105,6 @@ def creaIniOnePotTar(bn, jt, ca, absorp):
     """Create a potential which contains a target for the diffusion"""
     labelAbs = labelPotential(jt,ca)
     labelDif = labelAbs+"tar"
-#    labelAbs += "ind"+str(lookingForIndex(bn, jt, ca, absorp))
     labelAbs += "c"+str(ca)
     varClique = list(jt.clique(ca))
     compilator.createPotentialClique(labelDif, varClique)
@@ -187,31 +142,6 @@ def evsPotentials(bn, jt , evs, absorb):
                         label = labelPotential(jt,j)+"c"+str(j)
                         compilator.multiplicationPotentials(label,"EV_"+str(i),varClique,[str(i)])
                         break
-#    R = len(absorb)
-#    lsEvs = list(evs)
-#    for i in bn.ids():
-#        if(bn.variable(i).name() in evs):
-#            for j in range(R):
-#                cliq = absorb[j][0]
-#                if(i in jt.clique(cliq)):
-#                    b = 1
-#                    for l in bn.parents(i):
-#                        if(not(l in jt.clique(cliq))):
-#                            b = 0
-#                            break
-#                    if(b == 1):
-#                        varClique = list(jt.clique(cliq))
-#                        label = labelPotential(jt,cliq)+"ind"+str(j)
-#                        compilator.multiplicationPotentials(label,"EV_"+str(i),varClique,[str(i)])
-#                        lsEvs.remove(bn.variable(i).name())
-#                        break
-#    if(lsEvs):
-#        rac = absorb[-1][1]
-#        for i in lsEvs: #On place les evs qui n'ont pas trouvés de clique (parmis les premiers éléments de absorb), elles vont donc forcément dans la clique racine.
-#            varClique = list(jt.clique(rac))
-#            label = labelPotential(jt,rac)+"ind"+str(R-1)
-#            idEv = bn.idFromName(i)                
-#            compilator.multiplicationPotentials(label,"EV_"+str(idEv),varClique,[str(idEv)])
     
 def neighbors(jt,c):
     """List of all the direct neighbors of a clique c in a junction tree jt"""
@@ -286,7 +216,6 @@ def AinterB(la,lb):
     
 def sendMessAbsorp(bn, jt, ca, cb, indexca, absorp):
     """Updates the compiler array with inscrutions to send the message (absorption) from ca to cb"""
-#    indCB = str(lookingForIndex(bn, jt, cb, absorp))
     np = labelSeparator(jt, ca, cb)+"c1_"+str(ca)+"c2_"+str(cb)
     varNp = AinterB(list(jt.clique(ca)),list(jt.clique(cb))) 
     compilator.createPotentialClique(np,varNp)
@@ -328,6 +257,7 @@ def sendMessDiffu(bn, jt, ca, cb, index, diffu, cliquesTar):
         compilator.multiplicationPotentials(labelPotential(jt,cb)+"to"+labelPotential(jt,diffu[index+1][1])+"c"+str(cb), np, list(jt.clique(cb)), list(varNp))
 
 def deleteTarMainCliq(bn, jt, targetmp, rac):
+    '''Remove, from the target list, the target in the main clique'''
     for i in jt.clique(rac):
         for j in targetmp:
             if(bn.idFromName(j) == i):
@@ -395,7 +325,5 @@ def compil(bn, targets, evs):
     #Computing targets
     output(bn, jt, targets, absorp, diffu, cliquesTar)
     return compilator.getTab()
-
-#Diffusion opé
     
     

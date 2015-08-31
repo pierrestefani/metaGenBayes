@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 19 12:24:36 2015
-
-@author: Marvin
-"""
-
 import time
 
 class phpGenerator:
@@ -161,5 +154,4 @@ class phpGenerator:
             ev = "\t\""+str(i)+"\""+" => "+str(evs[i])
             evsphp.append(ev)
         stream.write(self.phpToPythonRes(evs, nameFunc))
-#        stream.write("print_r(getValue(array(\n"+",\n".join(evsphp)+"\n)));\n")
         stream.close()

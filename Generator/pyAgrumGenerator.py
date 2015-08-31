@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 22 21:10:26 2015
-
-@author: Marvin
-"""
 import time
 
 class pyAgrumGenerator:   
@@ -24,8 +18,6 @@ class pyAgrumGenerator:
             nameCpt = pyAgrumGenerator.nameCpt(bn,i)
             res += "\t"+nameCpt+" = gum.Potential()\n"
             res += "\t"+nameCpt+".add(v"+str(i)+")\n"
-#            for j in bn.parents(i):
-#                res += "\t"+nameCpt+".add(v"+str(j)+")\n"
             ls = bn.cpt(i).var_names
             for j in reversed(ls[0:len(ls)-1]):
                 res += "\t"+nameCpt+".add(v"+str(bn.idFromName(j))+")\n"

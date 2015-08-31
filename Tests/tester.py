@@ -18,6 +18,7 @@ from Compiler import Compiler
 import Generator.numpyGenerator
 import Generator.pyAgrumGenerator 
 import Generator.phpGenerator
+import Generator.javascriptGenerator
 
 
 
@@ -30,6 +31,7 @@ countNOET = 0
 resNumpyGen = {}
 resPHPGen = {}
 resPyAgrumGen = {}
+resJavascriptGen = {}
 error = True
 
 
@@ -90,17 +92,28 @@ def describeJunctionTree(bn, jt, target):
     res += "\nClique racine : "+str(Compiler.mainClique(bn, jt, target))
     return res
 
-def errorMarginChecker(generated, reference, targets, epsilon):
-    '''checks the deviation of thr generated results from a reference. If the deviation is > than epsilon, errorMarginChecker returns the boolean false'''  
+def errorMarginChecker(generated, reference, targets, epsilon, option='default'):
+    '''checks the deviation of thr generated results from a reference. If the deviation is > than epsilon, errorMarginChecker returns the boolean false'''
     for t in reference:
         i=0
         boolean = True
-        while(i<bn.variable(bn.idFromName(t)).domainSize()):
-            if(abs(reference.get(t)[i] - generated.get(t)[i])/reference.get(t)[i] >epsilon):
-                boolean=False
-                print("ERROR @ target "+t+", value "+str(i)+" is: "+str(generated.get(t)[i])+", should be "+str(reference.get(t)[i])+"\n")
-                break
-            i=i+1
+        if(option=='default'):
+            while(i<bn.variable(bn.idFromName(t)).domainSize()):
+                if(abs(reference.get(t)[i] - generated.get(t)[i])/reference.get(t)[i] >epsilon):
+                    boolean=False
+                    print("ERROR @ target "+t+", value "+str(i)+" is: "+str(generated.get(t)[i])+", should be "+str(reference.get(t)[i])+"\n")
+                    break
+                i=i+1
+        elif(option=='PHP'):
+             while(i<bn.variable(bn.idFromName(t)).domainSize()):
+                if(abs(reference.get(t)[i] - generated.get(t)[0][i])/reference.get(t)[i] >epsilon):
+                    boolean=False
+                    print("ERROR @ target "+t+", value "+str(i)+" is: "+str(generated.get(t)[i])+", should be "+str(reference.get(t)[i])+"\n")
+                    break
+                i=i+1
+        else:
+            print("Wrong optional argument")
+            return -1
     return boolean         
 
 def errorWriter(language, filename):
@@ -169,17 +182,23 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
         generator = Generator.phpGenerator.phpGenerator()
         generator.genere(bn, targets, evs, comp, "PHPGenerated____test.php", "getValuePHP")
         proc = subprocess.Popen("php PHPGenerated____test.php", shell = True, stdout = subprocess.PIPE)
-        resPHPGen = ast.literal_eval('"'+proc.stdout.read()+'"')
-        print("resPHPGen : "+str(resPHPGen))
-        print(resPHPGen.keys())
-        bool_PHP = errorMarginChecker(resPHPGen, resPyAgrumRef, targets, 0.1)
+        resPHPGen = ast.literal_eval(proc.stdout.read())
+        print("resPHPGen :"+str(resPHPGen))
+        bool_PHP = errorMarginChecker(resPHPGen, resPyAgrumRef, targets, 0.1, 'PHP')
         if(not(bool_PHP)):
             print("ERROR")
             errorWriter('php', 'errorPHP.txt')
             error = False
             break
       
-        
+  
+        '''Javascript generated version'''
+        resJavascriptGen.clear()
+        generator = Generator.javascriptGenerator.javascriptGenerator()
+        generator.genere(bn, targets, evs, comp, "javascriptGenerated____test.js", "getValueJS")
+        proc = subprocess.Popen('nodejs javascriptGenerated____test.js', shell = True, stdout = subprocess.PIPE)
+        print("resJsGen :"+str(proc.stdout.read()))
+    
 
         countNOET = countNOET + 1
     

@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 13 20:26:43 2015
-
-@author: Marvin
-"""
-
 '''Abstract class for the generators'''
 
 class AbstractGenerator:

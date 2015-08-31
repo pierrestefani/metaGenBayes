@@ -1,12 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri May 29 22:51:16 2015
-
-@author: Marvin
-"""
-
 import time
-import numpy as np
 
 class numpyGenerator:
     @classmethod
@@ -57,8 +49,7 @@ class numpyGenerator:
         for i in bn.cpt(int(var)).var_names:
             id_var = bn.idFromName(i)
             indexCpt += "[i"+str(varPot.index(id_var))+"]"
-        
-        #res += "\t"*(R-2)+nompot+indexPot+" *= "+str(cpt)+str(indexCpt)+"\n"
+
         res += "\t"+nompot+indexPot+" *= "+str(cpt)+str(indexCpt)+"\n"
         return res
              
