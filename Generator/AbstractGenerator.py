@@ -4,10 +4,10 @@ class AbstractGenerator:
     def initCpts(self,bn):
         raise(NotImplemented)
     
-    def creaPot(self,jt,c):
+    def creaPot(self, potentielName, potentielVariables):
         raise(NotImplemented)
     
-    def addVarPot(self,jt,c):
+    def addVarPot(self,variable, potentielName):
         raise(NotImplemented)
         
     def addSoftEvPot(self,evid,nompot,index,value):

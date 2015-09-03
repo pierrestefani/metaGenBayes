@@ -102,11 +102,12 @@ class numpyGenerator:
     def equa(self, nompot1, nompot2):
         return "\t"+nompot1+" = "+nompot2+"\n"
     
-    def genere(self, bn, targets, evs, comp, nameFile, nameFunc):
+    def genere(self, bn, targets, evs, comp, nameFile, nameFunc, header):
         stream = open(nameFile,'w')
         stream.write("'''This code was generated for python (with the numpy package) use, compiled by Compiler.py and generated with numpyGenerator.py.\nIt shouldn't be altered here'''\n")
         stream.write("\nimport numpy as np\n")
-        stream.write("'''Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"'''\n\n")
+        stream.write("'''Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"'''\n\n\n")
+        stream.write(header+"\n\n")
         stream.write("def "+nameFunc+"(evs):\n")
         stream.write("\tres = {}\n")
         stream.write(self.initCpts(bn))

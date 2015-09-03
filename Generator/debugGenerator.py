@@ -24,10 +24,11 @@ class debugGenerator(AbstractGenerator):
     def fill(self, pot, num): 
         return("\tFill"+str(num)+" de "+str(pot))
     
-    def genere(self, comp, nomfichier, nomfonc):
+    def genere(self, comp, nomfichier, nomfonc, header):
         stream = open(nomfichier,'w')
         stream.write("'''This code was generated to debug (it lists all the instructions to do on the tree to calculate the value of targets), compiled by Compiler.py and generated with debugGenerator.py.\nIt shouldn't be altered here'''\n")
-        stream.write("'''Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"'''\n\n")
+        stream.write("'''Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"'''\n\n\n")
+        stream.write(header+"\n\n")
         stream.write("def "+nomfonc+"():\n")
         for cur in comp:
             act = cur[0]

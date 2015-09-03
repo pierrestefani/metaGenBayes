@@ -122,12 +122,13 @@ class phpGenerator:
     def equa(self, nompot1, nompot2):
         return "\t$"+nompot1+" = $"+nompot2+";\n"
         
-    def genere(self, bn, targets, evs, comp, nameFile, nameFunc):
+    def genere(self, bn, targets, evs, comp, nameFile, nameFunc, header):
         stream = open(nameFile,'w')
         stream.write("<?php\n")
         stream.write("//This code was generated for php>5.6, compiled by Compiler.py and generated with phpGenerator.py.\n")
         stream.write("//It shouldn't be altered here\n")        
-        stream.write("//Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"\n\n")
+        stream.write("//Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"\n\n\n")
+        stream.write(header+"\n\n")
         stream.write("function "+nameFunc+"($evs) {\n")
         stream.write("\t$res=[];\n")
         stream.write(self.initCpts(bn))
