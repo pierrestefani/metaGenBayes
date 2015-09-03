@@ -33,7 +33,7 @@ resPHPGen = {}
 resPyAgrumGen = {}
 resJavascriptGen = {}
 error = True
-
+header = "#####Fichier de test#####"
 
 #print(targets)
 #print(evs)
@@ -150,7 +150,7 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
         '''pyAgrum generated version'''
         resPyAgrumGen.clear()
         generator= Generator.pyAgrumGenerator.pyAgrumGenerator()
-        generator.genere(bn, targets, evs, comp, "pyAgrumGenerated____test.py", "getValue")
+        generator.genere(bn, targets, evs, comp, "pyAgrumGenerated____test.py", "getValue", header)
         importOrReload('pyAgrumGenerated____test', 'getValue')
         resPyAgrumGen = getValue(evs)
         print('resPyAgrumRef : '+str(resPyAgrumRef))
@@ -166,7 +166,7 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
         '''numpy generated version'''
         resNumpyGen.clear()
         generator = Generator.numpyGenerator.numpyGenerator()
-        generator.genere(bn, targets, evs, comp, "numpyGenerated____test.py", "getValueNP")
+        generator.genere(bn, targets, evs, comp, "numpyGenerated____test.py", "getValueNP", header)
         importOrReload('numpyGenerated____test', 'getValueNP')
         resNumpyGen = getValueNP(evs)
         print("resNumpyGen : "+str(resNumpyGen))
@@ -180,7 +180,7 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
         '''PHP generated version'''
         resPHPGen.clear()
         generator = Generator.phpGenerator.phpGenerator()
-        generator.genere(bn, targets, evs, comp, "PHPGenerated____test.php", "getValuePHP")
+        generator.genere(bn, targets, evs, comp, "PHPGenerated____test.php", "getValuePHP", header)
         proc = subprocess.Popen("php PHPGenerated____test.php", shell = True, stdout = subprocess.PIPE)
         resPHPGen = ast.literal_eval(proc.stdout.read())
         print("resPHPGen :"+str(resPHPGen))
@@ -195,7 +195,7 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
         '''Javascript generated version'''
         resJavascriptGen.clear()
         generator = Generator.javascriptGenerator.javascriptGenerator()
-        generator.genere(bn, targets, evs, comp, "javascriptGenerated____test.js", "getValueJS")
+        generator.genere(bn, targets, evs, comp, "javascriptGenerated____test.js", "getValueJS", header)
         proc = subprocess.Popen('nodejs javascriptGenerated____test.js', shell = True, stdout = subprocess.PIPE)
         print("resJsGen :"+str(proc.stdout.read()))
     

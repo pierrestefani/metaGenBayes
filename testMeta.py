@@ -43,6 +43,7 @@ import pyAgrum as gum
 #bn.generateCPTs()
 
 bn = gum.loadBN("/home/ubuntu/metaGenBayes/BNs/hailfinder.bif")
+header = "######Testeur rapide#####"
 
 #Choose the rights targets
 #targets = ["d","a"] #Our own bn
@@ -69,20 +70,20 @@ for t in targets:
 print("** Génération pyAgrum **")
 comp = Compiler.compil(bn, targets[:], evs)
 generator = pyAgrumGenerator()
-generator.genere(bn, targets, evs, comp, "generated.py", "getValue")
+generator.genere(bn, targets, evs, comp, "generated.py", "getValue", header)
 from generated import getValue
 print(getValue(evs))
 
     
 print("**Génération Python (numpy)**")
 generator = numpyGenerator()
-generator.genere(bn,targets,evs,comp,"generatedNumpy.py","getValue")
+generator.genere(bn,targets,evs,comp,"generatedNumpy.py","getValue", header)
 from generatedNumpy import getValue
 print(getValue(evs))
 
 print("** Génération PHP **")
 generator = phpGenerator()
-generator.genere(bn,targets,evs,comp,"generatedPHP.php","getValue")
+generator.genere(bn,targets,evs,comp,"generatedPHP.php","getValue", header)
 import subprocess
 proc = subprocess.Popen("php /home/ubuntu/metaGenBayes/generatedPHP.php", shell = True, stdout = subprocess.PIPE)
 script_response = proc.stdout.read()
@@ -91,7 +92,7 @@ print(script_response)
 
 print("** Génération Javascript **")
 generator = javascriptGenerator()
-generator.genere(bn,targets,evs,comp,"generatedJavascript.js","getValue")
+generator.genere(bn,targets,evs,comp,"generatedJavascript.js","getValue", header)
 proc = subprocess.Popen('nodejs /home/ubuntu/metaGenBayes/generatedJavascript.js', shell = True, stdout = subprocess.PIPE)
 script_response = proc.stdout.read()
 print(script_response)
