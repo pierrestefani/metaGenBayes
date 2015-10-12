@@ -35,26 +35,26 @@ arrayOfInstructions = Compiler.compil(gum.loadBN(bnpath), request['target'][:], 
 if(request['language'].lower() == languages[1].lower()):
     from Generator.pyAgrumGenerator import pyAgrumGenerator
     generator = pyAgrumGenerator()
-    generator.genere(gum.loadBN(bnpath), request['target'][:], request['evidence'], arrayOfInstructions, request['filename']+'.py', request['function'])
+    generator.genere(gum.loadBN(bnpath), request['target'][:], request['evidence'], arrayOfInstructions, request['filename']+'.py', request['function'],request['header'])
     print("Génération en pyAgrum effectuée, fichier "+request['filename']+'.py crée')
 
 
 elif(request['language'].lower() == languages[2].lower()):
     from Generator.numpyGenerator import numpyGenerator
     generator= numpyGenerator()
-    generator.genere(gum.loadBN(bnpath), request['target'][:], request['evidence'], arrayOfInstructions, request['filename']+'.py', request['function'])
+    generator.genere(gum.loadBN(bnpath), request['target'][:], request['evidence'], arrayOfInstructions, request['filename']+'.py', request['function'],request['header'])
     print("Génération numpy effectuée, fichier "+request['filename']+".py crée")
 
 elif(request['language'].lower() == languages[3].lower()):
     from Generator.phpGenerator import phpGenerator
     generator = phpGenerator()
-    generator.genere(gum.loadBN(bnpath), request['target'][:], request['evidence'], arrayOfInstructions, request['filename']+'.php', request['function'])
+    generator.genere(gum.loadBN(bnpath), request['target'][:], request['evidence'], arrayOfInstructions, request['filename']+'.php', request['function'],request['header'])
     print("Génération PHP effectuée, fichier "+request['filename']+".php crée")
 
 elif(request['language'].lower() == languages[0].lower()):
     from Generator.debugGenerator import debugGenerator
     generator = debugGenerator()
-    generator.genere(gum.loadBN(bnpath), request['target'][:], request['evidence'], arrayOfInstructions, request['filename']+'.py', request['function'])
+    generator.genere(gum.loadBN(bnpath), request['target'][:], request['evidence'], arrayOfInstructions, request['filename']+'.py', request['function'],request['header'])
     print("Génération en mode debug effectuée, fichier "+request['filename']+'.py crée')
 
 elif(request['language'].lower() == languages[4].lower()):
