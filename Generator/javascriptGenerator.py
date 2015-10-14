@@ -155,7 +155,7 @@ class javascriptGenerator:
         stream = open(nameFile,'w')
         stream.write("//This code was generated for javascript use, compiled by Compiler.py and generated with javascriptGenerator.py.\n//It shouldn't be altered here'''\n")
         stream.write("//Generated on : "+time.strftime('%m/%d/%y %H:%M',time.localtime())+"\n\n\n")
-        stream.write(header+"\n\n")
+        stream.write("//"+header+"\n\n")
         stream.write("function "+nameFunc+"(evs) {\n")
         stream.write("\tres=[];\n")
         stream.write(self.initCpts(bn))
