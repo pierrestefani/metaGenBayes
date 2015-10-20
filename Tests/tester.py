@@ -51,12 +51,11 @@ def importOrReload(module_name, *names):
         globals()[name] = getattr(sys.modules[module_name], name)
 
 
-def randomEvidenceGenerator(bn):
+def randomEvidenceGenerator(bn, prop):
     '''randomEvidenceGenerator create a dictionaries of soft evidences to be used in the testing of metaGenBayes functions'''
     evs = {}
     nodeToEvs = list(bn.ids())
-    print(nodeToEvs)
-    evsLength = random.randint(1, len(bn.ids())/2)
+    evsLength = random.randint(1, len(bn.ids())/prop)
     i = 0
     while (i < evsLength):
         randVar = random.choice(nodeToEvs)
@@ -134,7 +133,7 @@ while(countNOBN < NUMBER_OF_NETWORKS and error):
     
     while(countNOET < NUMBER_OF_EVIDENCES_TESTED):
                 
-        evs = randomEvidenceGenerator(bn)
+        evs = randomEvidenceGenerator(bn,2)
         targets = targetSelecter(bn, evs)
         comp = Compiler.compil(bn, targets[:], evs)
         
